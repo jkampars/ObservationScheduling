@@ -10,7 +10,7 @@ from astroplan.scheduling import Transitioner, PriorityScheduler, Schedule, Sequ
 from astroplan.plots import  plot_schedule_altitude
 from observation import Observation
 
-import configparser
+import csv
 import datetime
 
 def insert (source_str, insert_str, pos):
@@ -18,44 +18,39 @@ def insert (source_str, insert_str, pos):
 
 
 def main():
-
-
     plt.style.use(astropy_mpl_style)
 
-
-    configFilePath = "config/config.cfg"
-    config = configparser.RawConfigParser()
-    config.read(configFilePath)
     targets = []
-    for key in config['sources']:
-        sourceName = key
-        sourceCoordinates = config.get('sources', key).replace(" ", "").split(",")
+    with open("config/config.csv","r") as csvfile:
+        next(csvfile)
+        spamreader = csv.reader(csvfile, delimiter=",", quotechar="|")
+        for row in spamreader:
+            print(row)
+            sourceName = row[0]
 
-        raText = str(sourceCoordinates[0])
-        print(raText)
-        raText = insert(raText, 'h', 2)
-        raText = insert(raText, 'm', 5)
-        raText = insert(raText, 's', len(raText))
-        print(raText)
-        decText = str(sourceCoordinates[1])
-        if(decText[0]!="-"):
-            decText = insert(decText, '°', 2)
-            decText = insert(decText, '′', 5)
-            decText = insert(decText, '″', len(decText))
-        else:
-            decText = insert(decText, '°', 3)
-            decText = insert(decText, '′', 6)
-            decText = insert(decText, '″', len(decText))
-        ra = Angle(raText)
-        dec = Angle(decText)
+            raText = row[1]
+            raText = insert(raText, 'h', 2)
+            raText = insert(raText, 'm', 5)
+            raText = insert(raText, 's', len(raText))
 
-        targetCoord = SkyCoord(frame='icrs', ra=ra, dec=dec, obstime="J2000")
-        ra = targetCoord.ra.hour
-        dec = targetCoord.dec.degree
-        targetCoord = SkyCoord(frame='icrs', ra=ra*u.hour, dec=dec*u.deg, obstime="J2000")
-        target = FixedTarget(coord = targetCoord, name=sourceName)
-        targets.append(target)
+            decText = row[2]
+            if (decText[0] != "-"):
+                decText = insert(decText, '°', 2)
+                decText = insert(decText, '′', 5)
+                decText = insert(decText, '″', len(decText))
+            else:
+                decText = insert(decText, '°', 3)
+                decText = insert(decText, '′', 6)
+                decText = insert(decText, '″', len(decText))
 
+            print(raText)
+            print(decText)
+            ra = Angle(raText)
+            dec = Angle(decText)
+
+            targetCoord = SkyCoord(frame='icrs', ra=ra, dec=dec, obstime="J2000")
+            target = FixedTarget(coord=targetCoord, name=sourceName)
+            targets.append(target)
 
     irbeneLocation = EarthLocation(lat=57.5535171694 * u.deg, lon=21.8545525000 * u.deg, height=87.30 * u.m)
     irbene = Observer(location=irbeneLocation, name="Irbene", timezone="Europe/Riga")
@@ -105,9 +100,6 @@ def main():
 
     for block in priority_schedule.scheduled_blocks:
         if (type(block) == type(ObservingBlock(target, 1*u.second, 1))):
-            #print(block.target.name)
-            #print(block.start_time.datetime)
-            #print((block.start_time+block.duration).datetime)
             observation = Observation(block.target.name, block.start_time.datetime, (block.start_time+block.duration).datetime)
             print(observation)
     plot_schedule_altitude(priority_schedule)

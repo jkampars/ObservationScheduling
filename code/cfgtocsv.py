@@ -18,7 +18,7 @@ def main():
         sources.append(source)
 
     with open('config/config.csv', 'w') as csvfile:
-        spamwriter = csv.writer(csvfile, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         spamwriter.writerow(['Source', 'Ra', 'Dec'])
         for source in sources:
             spamwriter.writerow([source[0], source[1], source[2]])

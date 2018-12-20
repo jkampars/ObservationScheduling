@@ -10,6 +10,8 @@ from astroplan.scheduling import Transitioner, PriorityScheduler, Schedule, Sequ
 from astroplan.plots import  plot_schedule_altitude
 from observation import Observation
 
+import os
+import json
 import csv
 import datetime
 from calendar import monthrange
@@ -26,7 +28,6 @@ def main():
         next(csvfile)
         spamreader = csv.reader(csvfile, delimiter=",", quotechar="|")
         for row in spamreader:
-            print(row)
             sourceName = row[0]
 
             raText = row[1]
@@ -70,18 +71,14 @@ def main():
 
         read_out = 1 * u.second
         target_exp = 60 * u.second
-        n = 10
         blocks = []
 
-        priority = 1
         for target in targets:
             n = target[3]
             priority = target[2]
             for i in range(target[1]):
                 b = ObservingBlock.from_exposures(target[0], priority, target_exp, n, read_out)
                 blocks.append(b)
-
-
 
         slew_rate = 2 * u.deg / u.second
         transitioner = Transitioner(slew_rate, {'filter':{'default': 5*u.second}})
@@ -100,15 +97,30 @@ def main():
                 observations.append(observation)
                 print(observation)
 
+        dict_array = []
         for observation in observations:
             for target in targets:
                 if target[0].name == observation.name:
                     print(target[0].name," has been observed once")
                     target[1] = target[1] - 1
+                    dict_array.append({
+                        "obs_name": observation.name,
+                        "start_time": observation.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+                        "end_time": observation.end_time.strftime("%Y-%m-%d %H:%M:%S"),
+                    })
+
+        json_dict = dict()
+        json_dict["observations"] = dict_array
+        if not os.path.isdir("observations"):
+            os.mkdir("observations")
+        with open("observations/"+day[0].strftime("%Y-%m-%d")+".json", 'w') as outfile:
+            json.dump(json_dict,  outfile, indent=4)
 
         #plot_schedule_altitude(priority_schedule)
         #plt.legend(loc="upper right")
         #plt.show()
+
+
 
     for target in targets:
         print(target[0].name,' observations left ',target[1],' scan size ',target[3],' priority ',target[2])

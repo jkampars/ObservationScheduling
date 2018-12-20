@@ -23,21 +23,20 @@ def main():
     plt.style.use(astropy_mpl_style)
 
 
-    source = "g33p64"
     configFilePath = "config/config.cfg"
     config = configparser.RawConfigParser()
     config.read(configFilePath)
-    coordinates = config.get('sources', source).replace(" ", "").split(",")
     targets = []
     for key in config['sources']:
         sourceName = key
         sourceCoordinates = config.get('sources', key).replace(" ", "").split(",")
 
         raText = str(sourceCoordinates[0])
+        print(raText)
         raText = insert(raText, 'h', 2)
         raText = insert(raText, 'm', 5)
         raText = insert(raText, 's', len(raText))
-
+        print(raText)
         decText = str(sourceCoordinates[1])
         if(decText[0]!="-"):
             decText = insert(decText, '°', 2)

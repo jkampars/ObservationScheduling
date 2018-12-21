@@ -5,7 +5,7 @@ import astropy.units as u
 from astropy.coordinates import SkyCoord, EarthLocation, Angle
 from astropy.time import Time
 from astropy.utils import iers
-iers.IERS_A_URL = 'http://toshi.nofs.navy.mil/ser7/finals2000A.all'
+iers.conf.auto_download = False
 from astroplan import Observer, FixedTarget, ObservingBlock
 from astroplan.constraints import AltitudeConstraint, TimeConstraint
 from astroplan.scheduling import Transitioner, PriorityScheduler, Schedule, SequentialScheduler

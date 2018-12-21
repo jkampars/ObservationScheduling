@@ -63,10 +63,12 @@ def main():
         week.append([dayStart, dayEnd])
 
     for day in week:
-        noon_before = day[0]
-        noon_after = day[1]
+        day_start = day[0]
+        day_end = day[1]
 
-        constraints = [AltitudeConstraint(20*u.deg, 85*u.deg)]
+        min_Altitude = 20
+        max_Altitude = 85
+        constraints = [AltitudeConstraint(min_Altitude*u.deg, max_Altitude*u.deg)]
 
         read_out = 1 * u.second
         target_exp = 60 * u.second
@@ -86,7 +88,7 @@ def main():
                                     observer = irbene,
                                     transitioner = transitioner)
 
-        priority_schedule = Schedule(noon_before, noon_after)
+        priority_schedule = Schedule(day_start, day_end)
         prior_scheduler(blocks, priority_schedule)
 
         observations = []
@@ -115,9 +117,11 @@ def main():
         with open("observations/"+day[0].strftime("%Y-%m-%d")+".json", 'w') as outfile:
             json.dump(json_dict,  outfile, indent=4)
 
-        #plot_schedule_altitude(priority_schedule)
-        #plt.legend(loc="upper right")
-        #plt.show()
+        plot_schedule_altitude(priority_schedule)
+        plt.axhline(y=min_Altitude, color='r', dashes=[2,2], label='Altitude constraint')
+        plt.axhline(y=max_Altitude, color='r', dashes=[2,2])
+        plt.legend(loc="upper right")
+        plt.show()
 
 
 

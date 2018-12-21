@@ -1,22 +1,19 @@
-import numpy as np
 import matplotlib.pyplot as plt
 from astropy.visualization import astropy_mpl_style
 import astropy.units as u
 from astropy.coordinates import SkyCoord, EarthLocation, Angle
 from astropy.time import Time
 from astropy.utils import iers
-iers.conf.auto_download = False
+iers.conf.iers_auto_url = 'http://toshi.nofs.navy.mil/ser7/finals2000A.all'
 from astroplan import Observer, FixedTarget, ObservingBlock
-from astroplan.constraints import AltitudeConstraint, TimeConstraint
-from astroplan.scheduling import Transitioner, PriorityScheduler, Schedule, SequentialScheduler
+from astroplan.constraints import AltitudeConstraint
+from astroplan.scheduling import Transitioner, PriorityScheduler, Schedule
 from astroplan.plots import  plot_schedule_altitude
 from observation import Observation
 
 import os
 import json
 import csv
-import datetime
-from calendar import monthrange
 
 def insert (source_str, insert_str, pos):
     return source_str[:pos]+insert_str+source_str[pos:]

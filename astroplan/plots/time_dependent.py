@@ -475,6 +475,7 @@ def plot_schedule_altitude(schedule, show_night=False):
         An ``Axes`` object with added airmass and schedule vs. time plot.
     """
     import matplotlib.pyplot as plt
+    ax = plt.gca()
     blocks = copy.copy(schedule.scheduled_blocks)
     sorted_blocks = sorted(schedule.observing_blocks, key=lambda x: x.priority)
     targets = [block.target for block in sorted_blocks]
@@ -484,7 +485,7 @@ def plot_schedule_altitude(schedule, show_night=False):
     color_idx = np.linspace(0, 1, len(targets))
     # lighter, bluer colors indicate higher priority
     for target, ci in zip(set(targets), color_idx):
-        plot_altitude(target, schedule.observer, ts, style_kwargs=dict(color=plt.cm.tab20(ci)))
+        plot_altitude(target, schedule.observer, ts, ax, style_kwargs=dict(color=plt.cm.tab20(ci)))
         targ_to_color[target.name] = plt.cm.tab20(ci)
     if show_night:
         # I'm pretty sure this overlaps a lot, creating darker bands
@@ -507,13 +508,14 @@ def plot_schedule_altitude(schedule, show_night=False):
 
     for block in blocks:
         if hasattr(block, 'target'):
-            plt.axvspan(block.start_time.plot_date, block.end_time.plot_date,
+            ax.axvspan(block.start_time.plot_date, block.end_time.plot_date,
                         fc=targ_to_color[block.target.name], lw=0, alpha=.6)
-            text(block.start_time.plot_date,10, block.target.name, rotation=90)
+            ax.text(block.start_time.plot_date,10, block.target.name, rotation=90)
         else:
-            plt.axvspan(block.start_time.plot_date, block.end_time.plot_date,
+            ax.axvspan(block.start_time.plot_date, block.end_time.plot_date,
                         color='k')
-    plt.axhline(3, color='k', label='Transitions')
+    ax.axhline(3, color='k', label='Transitions')
+    return ax
     # TODO: make this output a `axes` object
 
 def plot_parallactic(target, observer, time, ax=None, style_kwargs=None,

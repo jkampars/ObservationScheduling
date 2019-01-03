@@ -49,7 +49,7 @@ def main():
 
             targetCoord = SkyCoord(frame='icrs', ra=ra, dec=dec, obstime="J2000")
             target = FixedTarget(coord=targetCoord, name=sourceName)
-            targets.append([target, int(row[3]), int(row[4]), int(row[5])]) #target / ob a week / priority / scans per observation
+            targets.append([target, int(row[3]), int(row[4]), int(row[5])]) #target / obs freq / priority / scans per observation
 
     targets = sorted(targets, key=lambda x: x[2])
 
@@ -57,7 +57,7 @@ def main():
     irbene = Observer(location=irbeneLocation, name="Irbene", timezone="Europe/Riga")
 
     week=[]
-    for i in range(1,9):
+    for i in range(1,8):
         dayStart = Time('2018-12-0'+str(i)+' 12:00:00')
         dayEnd = Time('2018-12-0'+str(i)+' 16:00:00')
         week.append([dayStart, dayEnd])
@@ -77,9 +77,12 @@ def main():
         for target in targets:
             n = target[3]
             priority = target[2]
-            for i in range(target[1]):
+            if (target[1] != 0):
+                #print(target[1])
+                #print(target[1]==0)
                 b = ObservingBlock.from_exposures(target[0], priority, target_exp, n, read_out)
                 blocks.append(b)
+                #target[1] = target[1] - 1
 
         slew_rate = 2 * u.deg / u.second
         transitioner = Transitioner(slew_rate, {'filter':{'default': 5*u.second}})
@@ -96,7 +99,7 @@ def main():
             if (type(block) == type(ObservingBlock(target, 1*u.second, 1))):
                 observation = Observation(block.target.name, block.start_time.datetime, (block.start_time+block.duration).datetime)
                 observations.append(observation)
-                print(observation)
+                #print(observation)
 
         dict_array = []
         for observation in observations:
@@ -117,11 +120,11 @@ def main():
         with open("observations/"+day[0].strftime("%Y-%m-%d")+".json", 'w') as outfile:
             json.dump(json_dict,  outfile, indent=4)
 
-        plot_schedule_altitude(priority_schedule)
-        plt.axhline(y=min_Altitude, color='r', dashes=[2,2], label='Altitude constraint')
-        plt.axhline(y=max_Altitude, color='r', dashes=[2,2])
-        plt.legend(loc="upper right")
-        plt.show()
+        #plot_schedule_altitude(priority_schedule)
+        #plt.axhline(y=min_Altitude, color='r', dashes=[2,2], label='Altitude constraint')
+        #plt.axhline(y=max_Altitude, color='r', dashes=[2,2])
+        #plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+        #plt.show()
 
 
 

@@ -9,6 +9,7 @@ from astropy.time import Time
 from astropy.coordinates import get_sun
 from collections import Sequence
 import warnings
+from matplotlib.pyplot import text
 
 from ..exceptions import PlotWarning
 from ..utils import _set_mpl_style_sheet
@@ -508,6 +509,7 @@ def plot_schedule_altitude(schedule, show_night=False):
         if hasattr(block, 'target'):
             plt.axvspan(block.start_time.plot_date, block.end_time.plot_date,
                         fc=targ_to_color[block.target.name], lw=0, alpha=.6)
+            text(block.start_time.plot_date,10, block.target.name, rotation=90)
         else:
             plt.axvspan(block.start_time.plot_date, block.end_time.plot_date,
                         color='k')

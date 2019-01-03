@@ -4,7 +4,8 @@ import astropy.units as u
 from astropy.coordinates import SkyCoord, EarthLocation, Angle
 from astropy.time import Time
 from astropy.utils import iers
-iers.conf.iers_auto_url = 'http://toshi.nofs.navy.mil/ser7/finals2000A.all'
+from urllib.request import urlopen
+from urllib.error import HTTPError, URLError
 from astroplan import Observer, FixedTarget, ObservingBlock
 from astroplan.constraints import AltitudeConstraint
 from astroplan.scheduling import Transitioner, PriorityScheduler, Schedule
@@ -20,6 +21,15 @@ def insert (source_str, insert_str, pos):
 
 
 def main():
+    try:
+        urlopen('http://maia.usno.navy.mil/ser7/finals2000A.all')
+    except HTTPError as e:
+        print("Main IERS link not working, using mirror")
+        iers.conf.iers_auto_url = 'http://toshi.nofs.navy.mil/ser7/finals2000A.all'
+    except URLError as e:
+        print("Main IERS link not working, using mirror")
+        iers.conf.iers_auto_url = 'http://toshi.nofs.navy.mil/ser7/finals2000A.all'
+
     plt.style.use(astropy_mpl_style)
 
     targets = []
@@ -49,9 +59,7 @@ def main():
 
             targetCoord = SkyCoord(frame='icrs', ra=ra, dec=dec, obstime="J2000")
             target = FixedTarget(coord=targetCoord, name=sourceName)
-            if (sourceName == "g188p79"):
-                g = target
-            targets.append([target, int(row[3]), int(row[4]), int(row[5])]) #target / obs freq / priority / scans per observation
+            targets.append([target, int(row[3]), int(row[4]), int(row[5])]) #target / obs per_week / priority / scans per obs
 
     targets = sorted(targets, key=lambda x: x[2])
 
@@ -66,9 +74,6 @@ def main():
             hourEnd = Time('2018-12-0'+str(d)+' 1'+str(h+1)+':00:00')
             day.append([hourStart, hourEnd])
         week.append(day)
-
-    for hour in week[0]:
-        print(hour[0])
 
     for day in week:
         for hour in day:
@@ -87,11 +92,8 @@ def main():
                 n = target[3]
                 priority = target[2]
                 if (target[1] != 0):
-                    #print(target[1])
-                    #print(target[1]==0)
                     b = ObservingBlock.from_exposures(target[0], priority, target_exp, n, read_out)
                     blocks.append(b)
-                    #target[1] = target[1] - 1
 
             slew_rate = 2 * u.deg / u.second
             transitioner = Transitioner(slew_rate, {'filter':{'default': 5*u.second}})
@@ -108,7 +110,6 @@ def main():
                 if (type(block) == type(ObservingBlock(target, 1*u.second, 1))):
                     observation = Observation(block.target.name, block.start_time.datetime, (block.start_time+block.duration).datetime)
                     observations.append(observation)
-                    #print(observation)
 
             dict_array = []
             for observation in observations:

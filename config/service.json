@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "nifty-digit-175406",
+  "private_key_id": "bcd2531014943e3ab66103366f7827d24373df60",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDpoa8k+UpQ+jWg\n8kn1JHxU5vnG04Xf7i3cEqYIraXwJvg06v/ysM/qHkkbfxblfDQ738K+u9REcLpx\nREbCB/cZUlLh78f8qKrD9qkwjCUjtjlEQnO1CU5uRveprcgi+21mFD+ZWR/nAsAH\n6QWoPpuztg9r5itCNsM4xKiT1kIaMC9Z8NEs4dCLpuAGipJxafH1rZAgdIoa9GnO\n5HxkPESUcfTqxy7Cr2d06OViVZbyAt7Y1seWahMKdyndRLVSZO/Qw5F8VqcUZZcK\nfRTnDbAWFgdWduZzj0h2T74O15whJbGBkY1smbb+moaxpzmoATEJO1lqLOp0dgz1\n257rbtTPAgMBAAECggEATKHomZedfUc8/QBMKvkfQRgMGN/72xI8f6GsTU9sDQQz\nSORGNNwzLodlknvSzk45seP49GgWvaY+OXXcQbusHOWoYwysC99lN+b54v8tFXQp\nf47OdjTJwZlMlh729SaEYUXGAK4/rR31UALqhJ+Yoc9XapxyVwMwcLfs1aUjRIQm\nGTQugWPLXGFz1/5oMlV+8XLniJwDuY6f2pQBTLLZJ0zKRGnz4HolVbU5X0lqsfUz\nAKSijdaMXblXQiUPaOKzbQz8Hh8pZVryQlrTyCeSeI0WJbOOn6+5qv4abqXfQc4T\nxVkbn1AMf23Hz2bkGpFtbwfmAmbLvwbf8WNLGntIvQKBgQD8HHGfoenWQs5NQsnF\nCmYlwu+TmmQGbdu3ppkXDfh5VmWt8J/UlzvQ7RjzfXsRNuf6SfKT30rzNsuzhSmh\nyGTJjarTE8WbRnIBGMrflVXG1kGiYbFwKzD/a8fPyPCgYVSRwWZ4o4uvHMbveCgb\nM9iL5q/UF+94jSjH/DUrUer9iwKBgQDtPERTRJ5/PtnF/1krMC2NjtdvnH0JTJ5B\nZsCj/ML4kmfKXyshPXCNsJyND6CCIULP3MMd3+uZFIX0kqh55x11pNiZsSdwCSJ+\nWtzbwih9lddT2fxaMU744S+abONxDlKLEx8MLp+4g/OA9vP+NHOfoi5JEIRcW0Bl\ncRT3Zff2TQKBgQDxKLw/uQAXprv1B+g+BZ6EjJ3jkZIQ3FGKsWBLv19pog2Nf1lE\nYI4lYke10thANUdeEhJrBPOLB2V/ieezDB/s9Qjs9ELYL2CqT+7wRMdSdm0+STkU\nVRx/l7gAuPQEVlYxPtEooTji/yIEu+mRa9y+pqKWvXai2FSkSEsL70Zb1QKBgDKm\nM1AzzkMMgCItqjP2TUNzw7sohel+WitMbMSWKmo3l8E1IFgwbd9SXZogQ/yEbWdD\nksTGEd7U6uSUizO7jCaZ00S89daNnLetXonsoght/VMBr0byUBICwc8OgGCa1jSr\nGG3ZZnBWe56FGwKi4Cysy4T96cRuFwmRYxCOzKnhAoGAE6p9XQspn/WjSUFioB+j\nyosrQaL4Csd//DE2LmS4mAzuaCsuj4teJMNLDVIjqQvcMC2pgL83SBexm3e8m/IR\ngti0xKtXWMCT/fw5G5zyr8FkKJvpPJ60iQoy43hyouWyhO5Y9AYnZDIfgqoUY67c\nYAqIqX8C/fUSI10SgsXwaoM=\n-----END PRIVATE KEY-----\n",
+  "client_email": "irbene-calendar-reader@nifty-digit-175406.iam.gserviceaccount.com",
+  "client_id": "115816821381420523300",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/irbene-calendar-reader%40nifty-digit-175406.iam.gserviceaccount.com"
+}

@@ -10,10 +10,14 @@ from astroplan import Observer, FixedTarget, ObservingBlock
 from astroplan.constraints import AltitudeConstraint
 from astroplan.scheduling import Transitioner, PriorityScheduler, Schedule
 from astroplan.plots import  plot_schedule_altitude, plot_altitude
+from dateutil.parser import parse
+
 from observation import Observation
+from googlecalendar import get_next_week_events
 
 import os
 import json
+import datetime
 import csv
 
 def insert (source_str, insert_str, pos):
@@ -66,19 +70,17 @@ def main():
     irbeneLocation = EarthLocation(lat=57.5535171694 * u.deg, lon=21.8545525000 * u.deg, height=87.30 * u.m)
     irbene = Observer(location=irbeneLocation, name="Irbene", timezone="Europe/Riga")
 
-    week=[]
-    for d in range(1,8):
-        day = []
-        for h in range(2,6):
-            hourStart = Time('2018-12-0'+str(d)+' 1'+str(h)+':00:00')
-            hourEnd = Time('2018-12-0'+str(d)+' 1'+str(h+1)+':00:00')
-            day.append([hourStart, hourEnd])
-        week.append(day)
+    week = []
+    startArray, endArray, summaryArray = get_next_week_events()
+    for i in range(len(startArray)):
+        if ("(C band)" not in summaryArray[i]):
+            dayStart = parse(startArray[i])
+            dayEnd = parse(endArray[i])
+            week.append([dayStart, dayEnd])
 
     for day in week:
-        for hour in day:
-            hour_start = hour[0]
-            hour_end = hour[1]
+            dayStart = Time(day[0]) #convert from datetime to astropy.time
+            dayEnd = Time(day[1])
 
             min_Altitude = 20
             max_Altitude = 85
@@ -102,7 +104,7 @@ def main():
                                         observer = irbene,
                                         transitioner = transitioner)
 
-            priority_schedule = Schedule(hour_start, hour_end)
+            priority_schedule = Schedule(dayStart, dayEnd)
             prior_scheduler(blocks, priority_schedule)
 
             observations = []
@@ -127,13 +129,14 @@ def main():
             json_dict["observations"] = dict_array
             if not os.path.isdir("observations"):
                 os.mkdir("observations")
-            with open("observations/"+day[0][0].strftime("%Y-%m-%d-")+hour[0].strftime("%H-%M")+".json", 'w') as outfile:
+            if not os.path.isdir("observations/"):
+                os.mkdir("observations")
+            with open("observations/"+day[0].strftime("%Y-%m-%d-%H-%M")+".json", 'w') as outfile:
                 json.dump(json_dict,  outfile, indent=4)
             ax = plot_schedule_altitude(priority_schedule)
             ax.axhline(y=min_Altitude, color='r', dashes=[2,2], label='Altitude constraint')
             ax.axhline(y=max_Altitude, color='r', dashes=[2,2])
             ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
-            plt.tight_layout()
             plt.show()
 
 

@@ -661,7 +661,6 @@ class SequentialScheduler(Scheduler):
 
             # now identify the block that's the best
             bestblock_idx = np.argmax(block_constraint_results)
-
             if block_constraint_results[bestblock_idx] == 0.:
                 # if even the best is unobservable, we need a gap
                 current_time += self.gap_time
@@ -673,14 +672,28 @@ class SequentialScheduler(Scheduler):
                     current_time += trans.duration
 
                 # now assign the block itself times and add it to the schedule
+
                 newb = blocks.pop(bestblock_idx)
                 newb.start_time = current_time
                 current_time += newb.duration
                 newb.end_time = current_time
                 newb.constraints_value = block_constraint_results[bestblock_idx]
-
-                self.schedule.insert_slot(newb.start_time, newb)
-
+                #try:
+                #    self.schedule.insert_slot(newb.start_time, newb)
+                #except ValueError as e:
+                #    print("Error")
+                #    print(self.schedule.end_time)
+                #    print(newb.start_time, " ", newb.duration, "=", newb.start_time+newb.duration)
+                try:
+                    self.schedule.insert_slot(newb.start_time, newb)
+                except ValueError:
+                    print()
+                #else:
+                #    blocks.append(newb)
+        import datetime
+        timeLeft = self.schedule.end_time - self.schedule.scheduled_blocks[-1].end_time
+        timeLeft = timeLeft.to_datetime()
+        print("Time left - ",timeLeft)
         return self.schedule
 
 

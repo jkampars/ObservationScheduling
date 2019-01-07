@@ -20,7 +20,7 @@ def main():
         spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         spamwriter.writerow(['Source', 'Ra', 'Dec', 'Obs_per_week','priority','Scans_per_obs','Ra_vel'])
         for source in sources:
-            spamwriter.writerow([source[0], source[1], source[2], randint(1,7), randint(1,4), randint(1,10)])
+            spamwriter.writerow([source[0], source[1], source[2], randint(1,7), randint(1,4), randint(10,40)])
 
 if __name__=="__main__":
     main()

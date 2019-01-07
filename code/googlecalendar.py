@@ -43,8 +43,8 @@ def get_all_events():
                                          singleEvents=True, orderBy='startTime').execute()
     events = eventsResult.get('items', [])
     if not events:
-        print('No upcoming events found, returning null')
-        return None, None, None
+        print('No upcoming events found, returning empty arrays')
+        return [], [], []
     startArray = []
     endArray = []
     summaryArray = []
@@ -66,8 +66,8 @@ def get_next_week_events():
                                          timeMax=nextWeek, singleEvents=True, orderBy='startTime').execute()
     events = eventsResult.get('items', [])
     if not events:
-        print('No upcoming events found, returning null')
-        return None, None, None
+        print('No upcoming events found, returning empty arrays')
+        return [], [], []
     startArray = []
     endArray = []
     summaryArray = []

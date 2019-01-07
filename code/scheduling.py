@@ -8,7 +8,7 @@ from urllib.request import urlopen
 from urllib.error import HTTPError, URLError
 from astroplan import Observer, FixedTarget, ObservingBlock
 from astroplan.constraints import AltitudeConstraint
-from astroplan.scheduling import Transitioner, PriorityScheduler, Schedule
+from astroplan.scheduling import Transitioner, PriorityScheduler, Schedule, SequentialScheduler
 from astroplan.plots import  plot_schedule_altitude, plot_altitude
 from dateutil.parser import parse
 
@@ -65,7 +65,7 @@ def main():
             target = FixedTarget(coord=targetCoord, name=sourceName)
             targets.append([target, int(row[3]), int(row[4]), int(row[5])]) #target / obs per_week / priority / scans per obs
 
-    targets = sorted(targets, key=lambda x: x[2])
+    targets = sorted(targets, key=lambda x: x[2]) #sort targets by priority
 
     irbeneLocation = EarthLocation(lat=57.5535171694 * u.deg, lon=21.8545525000 * u.deg, height=87.30 * u.m)
     irbene = Observer(location=irbeneLocation, name="Irbene", timezone="Europe/Riga")
@@ -100,7 +100,7 @@ def main():
             slew_rate = 2 * u.deg / u.second
             transitioner = Transitioner(slew_rate, {'filter':{'default': 5*u.second}})
 
-            prior_scheduler = PriorityScheduler(constraints=constraints,
+            prior_scheduler = SequentialScheduler(constraints=constraints,
                                         observer = irbene,
                                         transitioner = transitioner)
 
@@ -137,12 +137,13 @@ def main():
             ax.axhline(y=min_Altitude, color='r', dashes=[2,2], label='Altitude constraint')
             ax.axhline(y=max_Altitude, color='r', dashes=[2,2])
             ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
-            plt.show()
+            #plt.show()
 
-
-
+    timeLeft = 0
     for target in targets:
+        timeLeft += target[1] * target[3]
         print(target[0].name,' observations left ',target[1],' scan size ',target[3],' priority ',target[2])
+    print('Total time left to observe ',timeLeft)
 
 if __name__=="__main__":
     main()

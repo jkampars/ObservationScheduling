@@ -39,8 +39,8 @@ def main():
     targets = []
     with open("config/config.csv","r") as csvfile:
         next(csvfile)
-        spamreader = csv.reader(csvfile, delimiter=",", quotechar="|")
-        for row in spamreader:
+        reader = csv.reader(csvfile, delimiter=",", quotechar="|")
+        for row in reader:
             sourceName = row[0]
 
             raText = row[1]
@@ -64,8 +64,37 @@ def main():
             targetCoord = SkyCoord(frame='icrs', ra=ra, dec=dec, obstime="J2000")
             target = FixedTarget(coord=targetCoord, name=sourceName)
             targets.append([target, int(row[3]), int(row[4]), int(row[5])]) #target / obs per_week / priority / scans per obs
-
     targets = sorted(targets, key=lambda x: x[2]) #sort targets by priority
+
+    calibrators = []
+    with open("config/calibrators.csv","r") as csvfile:
+        next(csvfile)
+        reader = csv.reader(csvfile, delimiter=";", quotechar="|")
+        for row in reader:
+            sourceName = row[0]
+
+            raText = str(row[1]).replace(" ","")
+            raText = insert(raText, 'h', 2)
+            raText = insert(raText, 'm', 5)
+            raText = insert(raText, 's', len(raText))
+
+            decText = str(row[2]).replace(" ","")
+            if (decText[0] != "-"):
+                decText = insert(decText, '°', 3)
+                decText = insert(decText, '′', 6)
+                decText = insert(decText, '″', len(decText))
+            else:
+                decText = insert(decText, '°', 3)
+                decText = insert(decText, '′', 6)
+                decText = insert(decText, '″', len(decText))
+
+
+            ra = Angle(raText)
+            dec = Angle(decText)
+
+            calibratorCoord = SkyCoord(frame='icrs', ra=ra, dec=dec, obstime="J2000")
+            calibrator = FixedTarget(coord=calibratorCoord, name=sourceName)
+            calibrators.append(calibrator)
 
     irbeneLocation = EarthLocation(lat=57.5535171694 * u.deg, lon=21.8545525000 * u.deg, height=87.30 * u.m)
     irbene = Observer(location=irbeneLocation, name="Irbene", timezone="Europe/Riga")
@@ -99,10 +128,8 @@ def main():
 
             slew_rate = 2 * u.deg / u.second
             transitioner = Transitioner(slew_rate, {'filter':{'default': 5*u.second}})
-
-            prior_scheduler = SequentialScheduler(constraints=constraints,
-                                        observer = irbene,
-                                        transitioner = transitioner)
+            print("Starting scheduler")
+            prior_scheduler = SequentialScheduler(constraints=constraints, observer = irbene, transitioner = transitioner, calibrators = calibrators)
 
             priority_schedule = Schedule(dayStart, dayEnd)
             prior_scheduler(blocks, priority_schedule)
@@ -137,7 +164,7 @@ def main():
             ax.axhline(y=min_Altitude, color='r', dashes=[2,2], label='Altitude constraint')
             ax.axhline(y=max_Altitude, color='r', dashes=[2,2])
             ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
-            #plt.show()
+            plt.show()
 
     timeLeft = 0
     for target in targets:

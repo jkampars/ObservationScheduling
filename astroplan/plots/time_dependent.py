@@ -460,7 +460,7 @@ def plot_altitude(targets, observer, time, ax=None, style_kwargs=None,
 def plot_schedule_altitude(schedule, show_night=False):
     """
     Plots when observations of targets are scheduled to occur superimposed
-    upon plots of the airmasses of the targets.
+    upon plots of the altitude of the targets.
 
     Parameters
     ----------
@@ -478,15 +478,24 @@ def plot_schedule_altitude(schedule, show_night=False):
     ax = plt.gca()
     blocks = copy.copy(schedule.scheduled_blocks)
     sorted_blocks = sorted(schedule.observing_blocks, key=lambda x: x.priority)
-    targets = [block.target for block in sorted_blocks]
+    targets = []
+    targetsCalibration = []
+    for block in sorted_blocks:
+        if block.calibration:
+            targetsCalibration.append(block.target)
+        else:
+            targets.append(block.target)
+
     ts = (schedule.start_time +
           np.linspace(0, (schedule.end_time - schedule.start_time).value, 100) * u.day)
     targ_to_color = {}
     color_idx = np.linspace(0, 1, len(targets))
     # lighter, bluer colors indicate higher priority
     for target, ci in zip(set(targets), color_idx):
-        plot_altitude(target, schedule.observer, ts, ax, style_kwargs=dict(color=plt.cm.tab20(ci)))
-        targ_to_color[target.name] = plt.cm.tab20(ci)
+        plot_altitude(target, schedule.observer, ts, ax, style_kwargs=dict(color=plt.cm.jet(ci)))
+        targ_to_color[target.name] = plt.cm.jet(ci)
+    for target in targetsCalibration:
+        plot_altitude(target, schedule.observer, ts, ax, style_kwargs=dict(color="red", linestyle=":"))
     if show_night:
         # I'm pretty sure this overlaps a lot, creating darker bands
         for test_time in ts:
@@ -508,9 +517,29 @@ def plot_schedule_altitude(schedule, show_night=False):
 
     for block in blocks:
         if hasattr(block, 'target'):
-            ax.axvspan(block.start_time.plot_date, block.end_time.plot_date,
-                        fc=targ_to_color[block.target.name], lw=0, alpha=.6)
-            ax.text(block.start_time.plot_date,10, block.target.name, rotation=90)
+            if(block.calibration):
+                ax.axvspan(block.start_time.plot_date, block.end_time.plot_date,
+                            lw=0, alpha=.75, color="red")
+                ax.text(block.start_time.plot_date,10, block.target.name, rotation=90)
+                """
+                x = block.start_time + 10 * u.min
+                ymin, ymax = ax.get_ylim()
+                while(x<block.end_time - 1 * u.min):
+                    xdata=[x.plot_date, x.plot_date]
+                    ydata=[ymin, ymax]
+                    ax.plot(xdata, ydata, 'k--')
+                    x += 10*u.min
+                y = ymin + 5
+                while(y<ymax):
+                    xdata=[block.start_time.plot_date, block.end_time.plot_date]
+                    ydata=[y,y]
+                    ax.plot(xdata, ydata, 'k--')
+                    y += 5
+                """
+            else:
+                ax.axvspan(block.start_time.plot_date, block.end_time.plot_date,
+                            fc=targ_to_color[block.target.name], lw=0, alpha=.6)
+                ax.text(block.start_time.plot_date,10, block.target.name, rotation=90)
         else:
             ax.axvspan(block.start_time.plot_date, block.end_time.plot_date,
                         color='k')

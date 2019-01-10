@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="5c500a79-5d2d-4172-ac6d-461f966a5a17" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/plots/time_dependent.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplan/plots/time_dependent.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/astroplan/scheduling.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplan/scheduling.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/scheduling.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/scheduling.py" afterDir="false" />
     </list>
@@ -14,11 +15,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/code/scheduling.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="602">
-              <caret line="166" column="12" selection-start-line="166" selection-start-column="12" selection-end-line="166" selection-end-column="12" />
+            <state relative-caret-position="467">
+              <caret line="124" column="31" selection-start-line="124" selection-start-column="31" selection-end-line="124" selection-end-column="31" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -26,11 +27,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/astroplan/scheduling.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="733">
-              <caret line="793" column="64" selection-start-line="793" selection-start-column="64" selection-end-line="793" selection-end-column="64" />
+            <state relative-caret-position="345">
+              <caret line="23" column="10" selection-start-line="23" selection-start-column="10" selection-end-line="23" selection-end-column="10" />
               <folding>
                 <element signature="e#108#216#0" expanded="true" />
               </folding>
@@ -39,16 +40,26 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/astroplan/target.py">
+        <entry file="file://$PROJECT_DIR$/astroplan/plots/time_dependent.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-720" />
+            <state relative-caret-position="726">
+              <caret line="533" column="72" selection-start-line="533" selection-start-column="72" selection-end-line="533" selection-end-column="72" />
+              <folding>
+                <element signature="e#64#172#0" expanded="true" />
+              </folding>
+            </state>
           </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/astroplan/target.py">
+          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/astroplan/constraints.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="812">
+            <state relative-caret-position="4920">
               <caret line="348" column="35" selection-start-line="348" selection-start-column="19" selection-end-line="348" selection-end-column="35" />
             </state>
           </provider>
@@ -109,6 +120,10 @@
       <find>from_exposures</find>
       <find>reate_score_array</find>
       <find>datetime</find>
+      <find>plot_altitude</find>
+      <find>firstSchedule</find>
+      <find>plot</find>
+      <find>self.gap_time</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -118,12 +133,12 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/code/observation.py" />
-        <option value="$PROJECT_DIR$/astroplan/plots/time_dependent.py" />
         <option value="$PROJECT_DIR$/quickstart.py" />
         <option value="$PROJECT_DIR$/code/googlecalendar.py" />
         <option value="$PROJECT_DIR$/code/cfgtocsv.py" />
-        <option value="$PROJECT_DIR$/code/scheduling.py" />
+        <option value="$PROJECT_DIR$/astroplan/plots/time_dependent.py" />
         <option value="$PROJECT_DIR$/astroplan/scheduling.py" />
+        <option value="$PROJECT_DIR$/code/scheduling.py" />
       </list>
     </option>
   </component>
@@ -228,16 +243,6 @@
     </layout>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/astroplan/plots/time_dependent.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1243">
-          <caret line="488" column="43" selection-start-line="488" selection-start-column="43" selection-end-line="488" selection-end-column="43" />
-          <folding>
-            <element signature="e#64#172#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/service.json" />
     <entry file="file://$PROJECT_DIR$/quickstart.py" />
     <entry file="file://$PROJECT_DIR$/code/calendar.py" />
@@ -250,6 +255,22 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="180">
           <caret line="12" column="32" selection-start-line="12" selection-start-column="32" selection-end-line="12" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/astroplan/plots/sky.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/astroplan/observer.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/astroplan/target.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/astroplan/constraints.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4920">
+          <caret line="348" column="35" selection-start-line="348" selection-start-column="19" selection-end-line="348" selection-end-column="35" />
         </state>
       </provider>
     </entry>
@@ -273,40 +294,32 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/astroplan/constraints.py">
+    <entry file="file://$PROJECT_DIR$/astroplan/plots/time_dependent.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="812">
-          <caret line="348" column="35" selection-start-line="348" selection-start-column="19" selection-end-line="348" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/astroplan/plots/sky.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/astroplan/observer.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/astroplan/target.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-720" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/scheduling.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="602">
-          <caret line="166" column="12" selection-start-line="166" selection-start-column="12" selection-end-line="166" selection-end-column="12" />
+        <state relative-caret-position="726">
+          <caret line="533" column="72" selection-start-line="533" selection-start-column="72" selection-end-line="533" selection-end-column="72" />
           <folding>
-            <element signature="e#0#31#0" expanded="true" />
+            <element signature="e#64#172#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/astroplan/scheduling.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="733">
-          <caret line="793" column="64" selection-start-line="793" selection-start-column="64" selection-end-line="793" selection-end-column="64" />
+        <state relative-caret-position="345">
+          <caret line="23" column="10" selection-start-line="23" selection-start-column="10" selection-end-line="23" selection-end-column="10" />
           <folding>
             <element signature="e#108#216#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code/scheduling.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="467">
+          <caret line="124" column="31" selection-start-line="124" selection-start-column="31" selection-end-line="124" selection-end-column="31" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
           </folding>
         </state>
       </provider>

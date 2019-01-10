@@ -11,9 +11,11 @@ from astroplan.constraints import AltitudeConstraint
 from astroplan.scheduling import Transitioner, PriorityScheduler, Schedule, SequentialScheduler
 from astroplan.plots import  plot_schedule_altitude, plot_altitude
 from dateutil.parser import parse
+from astroplan import is_always_observable
+
 
 from observation import Observation
-from googlecalendar import get_next_week_events
+from googlecalendar import get_next_week_events, get_all_events
 
 import os
 import json
@@ -102,69 +104,71 @@ def main():
     week = []
     startArray, endArray, summaryArray = get_next_week_events()
     for i in range(len(startArray)):
-        if ("(C band)" not in summaryArray[i]):
+        if (summaryArray[i] == "RT-16 maser"):
             dayStart = parse(startArray[i])
             dayEnd = parse(endArray[i])
             week.append([dayStart, dayEnd])
-
     for day in week:
-            dayStart = Time(day[0]) #convert from datetime to astropy.time
-            dayEnd = Time(day[1])
+        dayStart = Time(day[0]) #convert from datetime to astropy.time
+        dayEnd = Time(day[1])
 
-            min_Altitude = 20
-            max_Altitude = 85
-            constraints = [AltitudeConstraint(min_Altitude*u.deg, max_Altitude*u.deg)]
+        min_Altitude = 20
+        max_Altitude = 85
+        constraints = [AltitudeConstraint(min_Altitude*u.deg, max_Altitude*u.deg)]
 
-            read_out = 1 * u.second
-            target_exp = 60 * u.second
-            blocks = []
+        read_out = 1 * u.second
+        target_exp = 60 * u.second
+        blocks = []
 
+        for target in targets:
+            if (not is_always_observable(constraints, irbene, target[0], times=[dayStart, dayEnd])):
+                print(target[0].name," is not observable")
+            n = target[3]
+            priority = target[2]
+            if (target[1] != 0):
+                b = ObservingBlock.from_exposures(target[0], priority, target_exp, n, read_out)
+                blocks.append(b)
+
+        slew_rate = 2 * u.deg / u.second
+        transitioner = Transitioner(slew_rate, {'filter':{'default': 5*u.second}})
+        print("Starting scheduler")
+        prior_scheduler = SequentialScheduler(constraints=constraints, observer = irbene, transitioner = transitioner,
+                                              calibrators = calibrators, firstSchedule=True)
+
+        priority_schedule = Schedule(dayStart, dayEnd)
+        prior_scheduler(blocks, priority_schedule)
+
+        observations = []
+        for block in priority_schedule.scheduled_blocks:
+            if (type(block) == type(ObservingBlock(target, 1*u.second, 1))):
+                observation = Observation(block.target.name, block.start_time.datetime, (block.start_time+block.duration).datetime)
+                observations.append(observation)
+
+        dict_array = []
+        for observation in observations:
             for target in targets:
-                n = target[3]
-                priority = target[2]
-                if (target[1] != 0):
-                    b = ObservingBlock.from_exposures(target[0], priority, target_exp, n, read_out)
-                    blocks.append(b)
+                if target[0].name == observation.name:
+                    print(target[0].name," has been observed once")
+                    target[1] = target[1] - 1
+                    dict_array.append({
+                        "obs_name": observation.name,
+                        "start_time": observation.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+                        "end_time": observation.end_time.strftime("%Y-%m-%d %H:%M:%S"),
+                    })
 
-            slew_rate = 2 * u.deg / u.second
-            transitioner = Transitioner(slew_rate, {'filter':{'default': 5*u.second}})
-            print("Starting scheduler")
-            prior_scheduler = SequentialScheduler(constraints=constraints, observer = irbene, transitioner = transitioner, calibrators = calibrators)
-
-            priority_schedule = Schedule(dayStart, dayEnd)
-            prior_scheduler(blocks, priority_schedule)
-
-            observations = []
-            for block in priority_schedule.scheduled_blocks:
-                if (type(block) == type(ObservingBlock(target, 1*u.second, 1))):
-                    observation = Observation(block.target.name, block.start_time.datetime, (block.start_time+block.duration).datetime)
-                    observations.append(observation)
-
-            dict_array = []
-            for observation in observations:
-                for target in targets:
-                    if target[0].name == observation.name:
-                        print(target[0].name," has been observed once")
-                        target[1] = target[1] - 1
-                        dict_array.append({
-                            "obs_name": observation.name,
-                            "start_time": observation.start_time.strftime("%Y-%m-%d %H:%M:%S"),
-                            "end_time": observation.end_time.strftime("%Y-%m-%d %H:%M:%S"),
-                        })
-
-            json_dict = dict()
-            json_dict["observations"] = dict_array
-            if not os.path.isdir("observations"):
-                os.mkdir("observations")
-            if not os.path.isdir("observations/"):
-                os.mkdir("observations")
-            with open("observations/"+day[0].strftime("%Y-%m-%d-%H-%M")+".json", 'w') as outfile:
-                json.dump(json_dict,  outfile, indent=4)
-            ax = plot_schedule_altitude(priority_schedule)
-            ax.axhline(y=min_Altitude, color='r', dashes=[2,2], label='Altitude constraint')
-            ax.axhline(y=max_Altitude, color='r', dashes=[2,2])
-            ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
-            plt.show()
+        json_dict = dict()
+        json_dict["observations"] = dict_array
+        if not os.path.isdir("observations"):
+            os.mkdir("observations")
+        if not os.path.isdir("observations/"):
+            os.mkdir("observations")
+        with open("observations/"+day[0].strftime("%Y-%m-%d-%H-%M")+".json", 'w') as outfile:
+            json.dump(json_dict,  outfile, indent=4)
+        ax = plot_schedule_altitude(priority_schedule)
+        ax.axhline(y=min_Altitude, color='r', dashes=[2,2], label='Altitude constraint')
+        ax.axhline(y=max_Altitude, color='r', dashes=[2,2])
+        ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+        plt.show()
 
     timeLeft = 0
     for target in targets:

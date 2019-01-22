@@ -6,7 +6,7 @@ from astropy.time import Time
 from astropy.utils import iers
 from urllib.request import urlopen
 from urllib.error import HTTPError, URLError
-from astroplan import Observer, FixedTarget, ObservingBlock
+from astroplan import Observer, FixedTarget, ObservingBlock, TransitionBlock
 from astroplan.constraints import AltitudeConstraint
 from astroplan.scheduling import Transitioner, PriorityScheduler, Schedule, SequentialScheduler
 from astroplan.plots import  plot_schedule_altitude, plot_altitude
@@ -140,7 +140,8 @@ def main():
 
         observations = []
         for block in priority_schedule.scheduled_blocks:
-            if (type(block) == type(ObservingBlock(target, 1*u.second, 1))):
+            if hasattr(block, 'target'):
+                print(block.target)
                 observation = Observation(block.target.name, block.start_time.datetime, (block.start_time+block.duration).datetime)
                 observations.append(observation)
 
@@ -150,11 +151,11 @@ def main():
                 if target[0].name == observation.name:
                     print(target[0].name," has been observed once")
                     target[1] = target[1] - 1
-                    dict_array.append({
-                        "obs_name": observation.name,
-                        "start_time": observation.start_time.strftime("%Y-%m-%d %H:%M:%S"),
-                        "end_time": observation.end_time.strftime("%Y-%m-%d %H:%M:%S"),
-                    })
+            dict_array.append({
+                "obs_name": observation.name,
+                "start_time": observation.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "end_time": observation.end_time.strftime("%Y-%m-%d %H:%M:%S"),
+            })
 
         json_dict = dict()
         json_dict["observations"] = dict_array
@@ -169,12 +170,13 @@ def main():
         ax.axhline(y=max_Altitude, color='r', dashes=[2,2])
         ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
         plt.show()
-
+        print(priority_schedule.scheduled_blocks)
     timeLeft = 0
     for target in targets:
         timeLeft += target[1] * target[3]
         print(target[0].name,' observations left ',target[1],' scan size ',target[3],' priority ',target[2])
     print('Total time left to observe ',timeLeft)
+
 
 if __name__=="__main__":
     main()

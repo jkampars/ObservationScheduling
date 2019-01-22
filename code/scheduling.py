@@ -141,7 +141,6 @@ def main():
         observations = []
         for block in priority_schedule.scheduled_blocks:
             if hasattr(block, 'target'):
-                print(block.target)
                 observation = Observation(block.target.name, block.start_time.datetime, (block.start_time+block.duration).datetime)
                 observations.append(observation)
 
@@ -170,7 +169,6 @@ def main():
         ax.axhline(y=max_Altitude, color='r', dashes=[2,2])
         ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
         plt.show()
-        print(priority_schedule.scheduled_blocks)
     timeLeft = 0
     for target in targets:
         timeLeft += target[1] * target[3]

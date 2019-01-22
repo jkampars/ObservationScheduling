@@ -17,6 +17,7 @@ from astropy.time import Time
 from astropy.table import Table
 
 from operator import itemgetter
+from heapq import nsmallest
 
 from .utils import time_grid_from_range, stride_array
 from .constraints import AltitudeConstraint, AirmassConstraint
@@ -620,10 +621,58 @@ class SequentialScheduler(Scheduler):
                 if calibratorConstraint.any() == False:
                     constraintTrue = False
                     print("Calibrator doesn't meet constraints, checking next")
-                if constraintTrue:
-                    return calibrator
+            if constraintTrue:
+                return calibrator
         print("No calibrator fits, returning None")
         return None
+
+    def get_shortest_observation(self, current_time, blocks):
+        total_times = []
+        obs_times = []
+        trans_times = []
+        for b in blocks:
+            trans = self.transitioner(self.schedule.observing_blocks[-1], b, current_time, self.observer)
+            if trans is not None:
+                time = trans.duration
+                trans_times.append(trans.duration.value)
+                time += b.duration
+                obs_times.append(b.duration.value)
+            else:
+                trans_times.append(None)
+                time = b.duration
+                obs_times.append(b.duration.value)
+            total_times.append(time.value)
+        index = np.argmin(total_times)
+        shortest_time = total_times[index]
+        i = 1
+        target = blocks[index].target
+        while(i <= len(blocks)):
+            if trans_times[index] is not None:
+                transition_time = trans_times[index]
+            else:
+                transition_time = 0 * u.second
+            times = current_time + transition_time + u.Quantity(
+                [0 * u.second, obs_times[index] * u.second / 2, obs_times[index] * u.second])
+            constraintTrue = True
+            for constraint in self.constraints:
+                obsConstraint = constraint(self.observer, target, times)
+                if obsConstraint.any() == False:
+                    constraintTrue = False
+                    print(target.name, " doesn't meet constraints")
+            if constraintTrue:
+                print(target.name, " fits")
+                shortest_time = nsmallest(i, total_times)[-1]
+                print(shortest_time)
+                return index, shortest_time * u.second
+            i = i+1
+            print(i)
+            print(nsmallest(i,total_times)[-1])
+            index = total_times.index(nsmallest(i, total_times)[-1])
+            target = blocks[index].target
+            print("Trying ", target.name)
+
+        print("No block fits constraints")
+        return 0, 3 * u.hour #return 3 hours so check if block fits always fails
 
 
     def _make_schedule(self, blocks):
@@ -784,8 +833,6 @@ class SequentialScheduler(Scheduler):
                             self.schedule.insert_slot(calibratorBlock.start_time, calibratorBlock)
                             timeStart = calibratorBlock.end_time
                             calibratorConstraint = constraint(self.observer, calibrator, times)
-                            print(calibrator.name," constraint ",calibratorConstraint)
-                            print(times)
 
 
                     # first figure out the transition
@@ -858,25 +905,33 @@ class SequentialScheduler(Scheduler):
                     # If there's a best one that's observable, first get its transition
                     trans = block_transitions[bestblock_idx]
                     newb = blocks[bestblock_idx]
+                    totalTime = current_time + newb.duration
                     if trans is not None:
-                        # now assign the block itself times and add it to the schedule
-                        if (current_time + newb.duration + trans.duration < self.schedule.end_time):
-                            block_durations.pop(bestblock_idx)
-                            blocks.pop(bestblock_idx)
-                            block_transitions.pop(bestblock_idx)
+                        totalTime += trans.duration
+                    # now assign the block itself times and add it to the schedule
+                    if (totalTime < self.schedule.end_time):
+                        block_durations.pop(bestblock_idx)
+                        blocks.pop(bestblock_idx)
+                        block_transitions.pop(bestblock_idx)
+                        if trans is not None:
                             self.schedule.insert_slot(trans.start_time, trans)
                             current_time += trans.duration
-                            newb.start_time = current_time
-                            current_time += newb.duration
-                            newb.end_time = current_time
-                            newb.constraints_value = block_constraint_results[bestblock_idx]
-                            self.schedule.insert_slot(newb.start_time, newb)
-                        else:
-                            break
+                        newb.start_time = current_time
+                        current_time += newb.duration
+                        newb.end_time = current_time
+                        newb.constraints_value = block_constraint_results[bestblock_idx]
+                        self.schedule.insert_slot(newb.start_time, newb)
                     else:
-                        if (current_time + newb.duration < self.schedule.end_time):
-                            block_durations.pop(bestblock_idx)
-                            blocks.pop(bestblock_idx)
+                        index, shortest_time = self.get_shortest_observation(current_time, blocks)
+                        if (shortest_time < self.schedule.end_time - current_time):
+                            print(shortest_time)
+                            trans = self.transitioner(self.schedule.observing_blocks[-1], blocks[index], current_time, self.observer)
+                            newb = blocks.pop(index)
+                            blocks.pop(index)
+                            block_transitions.pop(index)
+                            if trans is not None:
+                                self.schedule.insert_slot(trans.start_time, trans)
+                                current_time += trans.duration
                             newb.start_time = current_time
                             current_time += newb.duration
                             newb.end_time = current_time
@@ -887,7 +942,6 @@ class SequentialScheduler(Scheduler):
             timeLeft = self.schedule.end_time - self.schedule.scheduled_blocks[-1].end_time
             timeLeft = timeLeft.to_datetime()
             print("Time left - ", timeLeft)
-            print(block_durations)
             return self.schedule
 
 

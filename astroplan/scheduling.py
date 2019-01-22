@@ -620,13 +620,16 @@ class SequentialScheduler(Scheduler):
                 calibratorConstraint = constraint(self.observer, calibrator, times)
                 if calibratorConstraint.any() == False:
                     constraintTrue = False
-                    print("Calibrator doesn't meet constraints, checking next")
+                    print("Calibrator ",calibrator.name," doesn't meet constraints, checking next")
             if constraintTrue:
+                print("Calibrator ", calibrator.name, "  fits")
                 return calibrator
         print("No calibrator fits, returning None")
         return None
 
     def get_shortest_observation(self, current_time, blocks):
+        print("Scheduled block by priority doesn't fit, checking if others do")
+        time_left = self.schedule.end_time - current_time
         total_times = []
         obs_times = []
         trans_times = []
@@ -644,6 +647,9 @@ class SequentialScheduler(Scheduler):
             total_times.append(time.value)
         index = np.argmin(total_times)
         shortest_time = total_times[index]
+        if (shortest_time * u.second > time_left):
+            print("No block fits or meets constraints")
+            return None, None
         i = 1
         target = blocks[index].target
         while(i <= len(blocks)):
@@ -658,21 +664,22 @@ class SequentialScheduler(Scheduler):
                 obsConstraint = constraint(self.observer, target, times)
                 if obsConstraint.any() == False:
                     constraintTrue = False
-                    print(target.name, " doesn't meet constraints")
             if constraintTrue:
                 print(target.name, " fits")
                 shortest_time = nsmallest(i, total_times)[-1]
-                print(shortest_time)
                 return index, shortest_time * u.second
+            else:
+                print(target.name, " doesn't meet constraints")
             i = i+1
-            print(i)
-            print(nsmallest(i,total_times)[-1])
-            index = total_times.index(nsmallest(i, total_times)[-1])
+            shortest_time = nsmallest(i, total_times)[-1]
+            if (shortest_time * u.second > time_left):
+                print("No block fits or meets constraints")
+                return None, None
+            index = total_times.index(shortest_time)
             target = blocks[index].target
             print("Trying ", target.name)
-
-        print("No block fits constraints")
-        return 0, 3 * u.hour #return 3 hours so check if block fits always fails
+        print("No block fits or meets constraints")
+        return None, None
 
 
     def _make_schedule(self, blocks):
@@ -899,6 +906,7 @@ class SequentialScheduler(Scheduler):
                         if trans is not None:
                             self.schedule.insert_slot(trans.start_time, trans)
                             current_time += trans.duration
+
                         self.firstSchedule = False
 
 
@@ -910,21 +918,75 @@ class SequentialScheduler(Scheduler):
                         totalTime += trans.duration
                     # now assign the block itself times and add it to the schedule
                     if (totalTime < self.schedule.end_time):
-                        block_durations.pop(bestblock_idx)
-                        blocks.pop(bestblock_idx)
-                        block_transitions.pop(bestblock_idx)
-                        if trans is not None:
-                            self.schedule.insert_slot(trans.start_time, trans)
-                            current_time += trans.duration
-                        newb.start_time = current_time
-                        current_time += newb.duration
-                        newb.end_time = current_time
-                        newb.constraints_value = block_constraint_results[bestblock_idx]
-                        self.schedule.insert_slot(newb.start_time, newb)
+
+                        if (newb.duration > 1 * u.hour):
+                            print(newb.target.name," too long, will be split")
+                            trans1 = trans
+                            halfBlock = ObservingBlock(newb.target, newb.duration / 2, newb.priority)
+                            print(newb.duration," / 2 = ",halfBlock.duration)
+                            trans_time1 = 0 * u.second
+                            if trans1 is not None:
+                                trans_time1 = trans1.duration
+                            times = current_time + trans_time1 + u.Quantity(
+                                [0 * u.second, 5 * u.min / 2, 5 * u.min])
+                            calibrator = self.get_closest_calibrator(newb.target.coord, times)
+                            calibratorBlock = ObservingBlock(calibrator, 5 * u.min, 1, calibration=True)
+                            trans2 = self.transitioner(halfBlock, calibratorBlock, current_time + trans_time1 + halfBlock.duration, self.observer)
+                            trans_time2 = 0 * u.second
+                            if trans2 is not None:
+                                trans_time2 = trans2.duration
+                            trans3 = self.transitioner(calibratorBlock, halfBlock, current_time + trans_time1 +
+                                                       halfBlock.duration + trans_time2 + calibratorBlock.duration, self.observer)
+                            trans_time3 = 0 * u.second
+                            if trans3 is not None:
+                                trans_time3 = trans3.duration
+
+                            if (current_time + trans_time1 + halfBlock.duration + trans_time2 +
+                                calibratorBlock.duration + trans_time3 + halfBlock.duration < self.schedule.end_time):
+                                blocks.pop(bestblock_idx)
+                                block_transitions.pop(bestblock_idx)
+                                if trans1 is not None:
+                                    self.schedule.insert_slot(trans1.start_time, trans1)
+                                    current_time += trans1.duration
+                                halfBlock.start_time = current_time
+                                current_time += halfBlock.duration
+                                halfBlock.end_time = current_time + halfBlock.duration
+                                halfBlock.constraints_value = block_constraint_results[bestblock_idx]
+                                self.schedule.insert_slot(halfBlock.start_time, halfBlock)
+                                if trans2 is not None:
+                                    self.schedule.insert_slot(trans2.start_time, trans2)
+                                    current_time += trans2.duration
+                                calibratorBlock.start_time = current_time
+                                current_time += calibratorBlock.duration
+                                calibratorBlock.end_time = current_time + calibratorBlock.duration
+                                self.schedule.insert_slot(calibratorBlock.start_time, calibratorBlock)
+                                timeStart = calibratorBlock.end_time
+                                if trans3 is not None:
+                                    self.schedule.insert_slot(trans3.start_time, trans3)
+                                    current_time += trans3.duration
+                                halfBlock2 = ObservingBlock(newb.target, newb.duration / 2, newb.priority)
+                                halfBlock2.start_time = current_time
+                                current_time += halfBlock2.duration
+                                halfBlock2.end_time = current_time + halfBlock2.duration
+                                halfBlock2.constraints_value = block_constraint_results[bestblock_idx]
+                                self.schedule.insert_slot(halfBlock2.start_time, halfBlock2)
+                            else:
+                                print("Split block too long, can't split")
+                        else:
+                            block_durations.pop(bestblock_idx)
+                            blocks.pop(bestblock_idx)
+                            block_transitions.pop(bestblock_idx)
+                            if trans is not None:
+                                self.schedule.insert_slot(trans.start_time, trans)
+                                current_time += trans.duration
+                            newb.start_time = current_time
+                            current_time += newb.duration
+                            newb.end_time = current_time
+                            newb.constraints_value = block_constraint_results[bestblock_idx]
+                            self.schedule.insert_slot(newb.start_time, newb)
                     else:
                         index, shortest_time = self.get_shortest_observation(current_time, blocks)
-                        if (shortest_time < self.schedule.end_time - current_time):
-                            print(shortest_time)
+                        if index is not None and shortest_time is not None:
                             trans = self.transitioner(self.schedule.observing_blocks[-1], blocks[index], current_time, self.observer)
                             newb = blocks.pop(index)
                             blocks.pop(index)

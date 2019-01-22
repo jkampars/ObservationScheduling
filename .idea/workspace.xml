@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5c500a79-5d2d-4172-ac6d-461f966a5a17" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/astroplan/scheduling.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplan/scheduling.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/scheduling.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/scheduling.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/cfgtocsv.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/cfgtocsv.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -16,8 +17,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/code/scheduling.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="212">
-              <caret line="143" selection-start-line="143" selection-end-line="143" />
+            <state relative-caret-position="302">
+              <caret line="128" column="29" selection-start-line="128" selection-start-column="29" selection-end-line="128" selection-end-column="29" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -28,8 +29,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/astroplan/scheduling.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1020">
-              <caret line="664" column="35" selection-start-line="664" selection-start-column="35" selection-end-line="664" selection-end-column="35" />
+            <state relative-caret-position="572">
+              <caret line="962" column="68" selection-start-line="962" selection-start-column="68" selection-end-line="962" selection-end-column="68" />
               <folding>
                 <element signature="e#108#216#0" expanded="true" />
               </folding>
@@ -49,10 +50,22 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/astroplan/plots/time_dependent.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="7800">
+            <state relative-caret-position="812">
               <caret line="533" column="72" selection-start-line="533" selection-start-column="72" selection-end-line="533" selection-end-column="72" />
               <folding>
                 <element signature="e#64#172#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code/cfgtocsv.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="330">
+              <caret line="22" column="106" selection-start-line="22" selection-start-column="106" selection-end-line="22" selection-end-column="106" />
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -94,6 +107,9 @@
       <find>self.gap_time</find>
       <find>_duration_offsets</find>
       <find>constraint</find>
+      <find>transitioner</find>
+      <find>trans.start_time</find>
+      <find>timeStart</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -105,16 +121,16 @@
         <option value="$PROJECT_DIR$/code/observation.py" />
         <option value="$PROJECT_DIR$/quickstart.py" />
         <option value="$PROJECT_DIR$/code/googlecalendar.py" />
-        <option value="$PROJECT_DIR$/code/cfgtocsv.py" />
         <option value="$PROJECT_DIR$/astroplan/plots/time_dependent.py" />
         <option value="$PROJECT_DIR$/code/scheduling.py" />
+        <option value="$PROJECT_DIR$/code/cfgtocsv.py" />
         <option value="$PROJECT_DIR$/astroplan/scheduling.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-75" />
-    <option name="y" value="27" />
+    <option name="x" value="204" />
+    <option name="y" value="31" />
     <option name="width" value="1368" />
     <option name="height" value="1017" />
   </component>
@@ -190,7 +206,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-75" y="27" width="1368" height="1017" extended-state="0" />
+    <frame x="204" y="31" width="1368" height="1017" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15144767" />
@@ -234,16 +250,6 @@
     <entry file="file://$PROJECT_DIR$/astroplan/observer.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/code/cfgtocsv.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="22" column="98" selection-start-line="22" selection-start-column="98" selection-end-line="22" selection-end-column="98" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/astroplan/target.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -266,7 +272,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/astroplan/plots/time_dependent.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7800">
+        <state relative-caret-position="812">
           <caret line="533" column="72" selection-start-line="533" selection-start-column="72" selection-end-line="533" selection-end-column="72" />
           <folding>
             <element signature="e#64#172#0" expanded="true" />
@@ -274,10 +280,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/code/cfgtocsv.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="22" column="106" selection-start-line="22" selection-start-column="106" selection-end-line="22" selection-end-column="106" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/code/scheduling.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="212">
-          <caret line="143" selection-start-line="143" selection-end-line="143" />
+        <state relative-caret-position="302">
+          <caret line="128" column="29" selection-start-line="128" selection-start-column="29" selection-end-line="128" selection-end-column="29" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
@@ -286,8 +302,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/astroplan/scheduling.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1020">
-          <caret line="664" column="35" selection-start-line="664" selection-start-column="35" selection-end-line="664" selection-end-column="35" />
+        <state relative-caret-position="572">
+          <caret line="962" column="68" selection-start-line="962" selection-start-column="68" selection-end-line="962" selection-end-column="68" />
           <folding>
             <element signature="e#108#216#0" expanded="true" />
           </folding>

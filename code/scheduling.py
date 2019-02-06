@@ -11,11 +11,11 @@ from astroplan.constraints import AltitudeConstraint
 from astroplan.scheduling import Transitioner, PriorityScheduler, Schedule, SequentialScheduler
 from astroplan.plots import  plot_schedule_altitude, plot_altitude
 from dateutil.parser import parse
-from astroplan import is_always_observable
+from astroplan import is_always_observable, download_IERS_A
 
 
-from observation import Observation
-from googlecalendar import get_next_week_events, get_all_events
+from .observation import Observation
+from .googlecalendar import get_next_week_events, get_all_events
 
 import os
 import json
@@ -35,6 +35,7 @@ def main():
     except URLError as e:
         print("Main IERS link not working, using mirror")
         iers.conf.iers_auto_url = 'http://toshi.nofs.navy.mil/ser7/finals2000A.all'
+    #download_IERS_A()
 
     plt.style.use(astropy_mpl_style)
 

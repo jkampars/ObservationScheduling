@@ -867,6 +867,7 @@ class SequentialScheduler(Scheduler):
                         timeStart = calibratorBlock.end_time
 
                         self.schedule.insert_slot(calibratorBlock.start_time, calibratorBlock)
+                        print("Observed ", calibratorBlock.target.name)
                         lastBlock = calibratorBlock
                         trans = self.transitioner(blocks[bestblock_idx], b, current_time, self.observer)
                         transition_time = 0 * u.second if trans is None else trans.duration
@@ -906,6 +907,7 @@ class SequentialScheduler(Scheduler):
                             current_time += calibratorBlock.duration
                             calibratorBlock.end_time = current_time
                             self.schedule.insert_slot(calibratorBlock.start_time, calibratorBlock)
+                            print("Observed ", calibratorBlock.target.name)
                             lastBlock = calibratorBlock
                             timeStart = calibratorBlock.end_time
                         else:
@@ -1005,6 +1007,7 @@ class SequentialScheduler(Scheduler):
                             newb.end_time = current_time
                             newb.constraints_value = block_constraint_results[bestblock_idx]
                             self.schedule.insert_slot(newb.start_time, newb)
+                            print("Observed ", newb.target.name)
                             lastBlock = newb
                     else:
                         index, shortest_time = self.get_shortest_observation(current_time, blocks)
@@ -1019,6 +1022,7 @@ class SequentialScheduler(Scheduler):
                             newb.end_time = current_time
                             newb.constraints_value = block_constraint_results[bestblock_idx]
                             self.schedule.insert_slot(newb.start_time, newb)
+                            print("Observed ", newb.target.name)
                             lastBlock = newb
                         else:
                             break

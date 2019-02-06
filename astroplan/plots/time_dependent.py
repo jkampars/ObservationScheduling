@@ -15,7 +15,7 @@ from ..exceptions import PlotWarning
 from ..utils import _set_mpl_style_sheet
 from .sky import plot_sky
 
-__all__ = ['plot_airmass', 'plot_schedule_airmass', 'plot_altitude', 'plot_schedule_altitude', 'plot_schedule_sky', 'plot_parallactic']
+__all__ = ['plot_airmass', 'plot_schedule_airmass', 'plot_altitude', 'plot_schedule_altitude', 'plot_parallactic']
 
 
 def _secz_to_altitude(secant_z):
@@ -538,68 +538,6 @@ def plot_schedule_altitude(schedule, show_night=False):
     return ax
     # TODO: make this output a `axes` object
 
-def plot_schedule_sky(schedule):
-    """
-    Plots when observations of targets are scheduled to occur superimposed
-    upon plots of the altitude of the targets.
-
-    Parameters
-    ----------
-    schedule : `~astroplan.Schedule`
-        a schedule object output by a scheduler
-    show_night : bool
-        Shades the night-time on the plot
-
-    Returns
-    -------
-    ax :  `~matplotlib.axes.Axes`
-        An ``Axes`` object with added airmass and schedule vs. time plot.
-    """
-    import matplotlib.pyplot as plt
-    ax = plt.gca()
-    blocks = copy.copy(schedule.scheduled_blocks)
-    sorted_blocks = sorted(schedule.observing_blocks, key=lambda x: x.priority)
-    targets = []
-    targetsCalibration = []
-    for block in sorted_blocks:
-        if block.calibration:
-            targetsCalibration.append(block.target)
-        else:
-            targets.append(block.target)
-
-    ts = (schedule.start_time +
-          np.linspace(0, (schedule.end_time - schedule.start_time).value, 100) * u.day)
-    targ_to_color = {}
-    color_idx = np.linspace(0, 1, len(targets))
-    # lighter, bluer colors indicate higher priority
-    for target, ci in zip(set(targets), color_idx):
-        if "split" not in target.name:
-            #plot_altitude(target, schedule.observer, ts, ax, style_kwargs=dict(color=plt.cm.jet(ci)))
-            targ_to_color[target.name] = plt.cm.jet(ci)
-    for target in targetsCalibration:
-        #plot_altitude(target, schedule.observer, ts, ax, style_kwargs=dict(color="red", linestyle=":"))
-        plot_sky()
-    for block in blocks:
-        if hasattr(block, 'target'):
-            if(block.calibration):
-                ax.axvspan(block.start_time.plot_date, block.end_time.plot_date,
-                            lw=0, alpha=.75, color="red")
-                ax.text(block.start_time.plot_date,10, block.target.name, rotation=90)
-            else:
-                if "split" in block.target.name:
-                    ax.axvspan(block.start_time.plot_date, block.end_time.plot_date,
-                               fc=targ_to_color[block.target.name.replace(" split",'')], lw=0, alpha=.6)
-                    ax.text(block.start_time.plot_date, 10, block.target.name.replace(" split",''), rotation=90)
-                else:
-                    ax.axvspan(block.start_time.plot_date, block.end_time.plot_date,
-                                fc=targ_to_color[block.target.name], lw=0, alpha=.6)
-                    ax.text(block.start_time.plot_date,10, block.target.name, rotation=90)
-        else:
-            ax.axvspan(block.start_time.plot_date, block.end_time.plot_date,
-                        color='k')
-    ax.axhline(3, color='k', label='Transitions')
-    return ax
-    # TODO: make this output a `axes` object
 
 def plot_parallactic(target, observer, time, ax=None, style_kwargs=None,
                      style_sheet=None):

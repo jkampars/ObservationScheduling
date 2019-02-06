@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import matplotlib.pyplot as plt
 from astropy.visualization import astropy_mpl_style
 import astropy.units as u
@@ -9,13 +10,13 @@ from urllib.error import HTTPError, URLError
 from astroplan import Observer, FixedTarget, ObservingBlock, TransitionBlock
 from astroplan.constraints import AltitudeConstraint
 from astroplan.scheduling import Transitioner, PriorityScheduler, Schedule, SequentialScheduler
-from astroplan.plots import  plot_schedule_altitude, plot_altitude
+from astroplan.plots import  plot_schedule_altitude, plot_altitude, plot_schedule_sky, plot_sky
 from dateutil.parser import parse
 from astroplan import is_always_observable, download_IERS_A
+from collections import OrderedDict
 
-
-from .observation import Observation
-from .googlecalendar import get_next_week_events, get_all_events
+from observation import Observation
+from googlecalendar import get_next_week_events, get_all_events
 
 import os
 import json
@@ -38,6 +39,11 @@ def main():
     #download_IERS_A()
 
     plt.style.use(astropy_mpl_style)
+
+    irbeneLocation = EarthLocation(lat=57.5535171694 * u.deg, lon=21.8545525000 * u.deg, height=87.30 * u.m)
+    irbene = Observer(location=irbeneLocation, name="Irbene", timezone="Europe/Riga")
+
+    observe_time = Time(['2019-02-05 15:30:00'])
 
     targets = []
     with open("config/config.csv","r") as csvfile:
@@ -69,6 +75,7 @@ def main():
             targets.append([target, int(row[3]), int(row[4]), int(row[5])]) #target / obs per_week / priority / scans per obs
     targets = sorted(targets, key=lambda x: x[2]) #sort targets by priority
 
+
     calibrators = []
     with open("config/calibrators.csv","r") as csvfile:
         next(csvfile)
@@ -99,8 +106,6 @@ def main():
             calibrator = FixedTarget(coord=calibratorCoord, name=sourceName)
             calibrators.append(calibrator)
 
-    irbeneLocation = EarthLocation(lat=57.5535171694 * u.deg, lon=21.8545525000 * u.deg, height=87.30 * u.m)
-    irbene = Observer(location=irbeneLocation, name="Irbene", timezone="Europe/Riga")
 
     week = []
     startArray, endArray, summaryArray = get_next_week_events()
@@ -165,11 +170,20 @@ def main():
             os.mkdir("observations")
         with open("observations/"+day[0].strftime("%Y-%m-%d-%H-%M")+".json", 'w') as outfile:
             json.dump(json_dict,  outfile, indent=4)
-        ax = plot_schedule_altitude(priority_schedule)
-        ax.axhline(y=min_Altitude, color='r', dashes=[2,2], label='Altitude constraint')
-        ax.axhline(y=max_Altitude, color='r', dashes=[2,2])
-        ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+        ax = plot_schedule_sky(priority_schedule)
+        #ax = plot_schedule_altitude(priority_schedule)
+
+        handles, labels = ax.get_legend_handles_labels()
+        print(handles)
+        handle_list, label_list = [], []
+        for handle, label in zip(handles, labels):
+            if label not in label_list and handle not in handle_list:
+                handle_list.append(handle)
+                label_list.append(label)
+        plt.legend(handle_list, label_list, loc="center left", bbox_to_anchor=(1, 0.5))
+
         plt.show()
+
     timeLeft = 0
     for target in targets:
         timeLeft += target[1] * target[3]

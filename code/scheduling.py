@@ -147,6 +147,7 @@ def main():
         observations = []
         for block in priority_schedule.scheduled_blocks:
             if hasattr(block, 'target'):
+                print(block.target.name)
                 observation = Observation(block.target.name, block.start_time.datetime, (block.start_time+block.duration).datetime)
                 observations.append(observation)
 
@@ -170,11 +171,10 @@ def main():
             os.mkdir("observations")
         with open("observations/"+day[0].strftime("%Y-%m-%d-%H-%M")+".json", 'w') as outfile:
             json.dump(json_dict,  outfile, indent=4)
-        ax = plot_schedule_sky(priority_schedule)
-        #ax = plot_schedule_altitude(priority_schedule)
+        #ax = plot_schedule_sky(priority_schedule)
+        ax = plot_schedule_altitude(priority_schedule)
 
         handles, labels = ax.get_legend_handles_labels()
-        print(handles)
         handle_list, label_list = [], []
         for handle, label in zip(handles, labels):
             if label not in label_list and handle not in handle_list:

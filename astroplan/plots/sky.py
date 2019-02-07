@@ -7,6 +7,7 @@ import astropy.units as u
 from astropy.time import Time
 import warnings
 
+from ..scheduling import ObservingBlock
 from ..exceptions import PlotBelowHorizonWarning
 from ..utils import _set_mpl_style_sheet
 
@@ -245,42 +246,47 @@ def plot_schedule_sky(schedule):
     """
 
     import matplotlib.pyplot as plt
-    sorted_blocks = sorted(schedule.observing_blocks, key=lambda x: x.priority)
+    blocks = schedule.scheduled_blocks
     targets = []
     targetsCalibration = []
     observation_nr = 1
-    for block in sorted_blocks:
-        if block.calibration:
-            targetsCalibration.append([block.target, block.start_time, block.end_time, observation_nr])
-            observation_nr = observation_nr + 1
-        else:
-            targets.append([block.target, block.start_time, block.end_time, observation_nr])
-            observation_nr = observation_nr + 1
+    for block in blocks:
+        if isinstance(block, ObservingBlock):
+            if block.calibration:
+                targetsCalibration.append([block.target, block.start_time, block.end_time, observation_nr])
+                print(block.target.name, " ", observation_nr)
+                observation_nr = observation_nr + 1
+            else:
+                targets.append([block.target, block.start_time, block.end_time, observation_nr])
+                print(block.target.name, " ", observation_nr)
+                observation_nr = observation_nr + 1
 
-    color_idx = np.linspace(0, 1, len(targets))
-    color_idx2 = np.linspace(0, 1, len(targetsCalibration))
-    # lighter, bluer colors indicate higher priority
     targets = np.array(targets)
     targetsCalibration = np.array(targetsCalibration)
+    color_idx = np.linspace(0, 1, len(targets))
+    color_idx2 = np.linspace(0, 1, len(targetsCalibration))
+    colorDict = {}
+    for target, ci in zip(targets[:,0],color_idx):
+        colorDict[target.name] = ci
+
+    for target, ci in zip(targetsCalibration[:,0],color_idx2):
+        colorDict[target.name] = ci
     for target, start_time, end_time, observation_nr, ci in zip(targets[:,0], targets[:,1], targets[:,2],
                                                                 targets[:,3], color_idx):
+        if "split" in target.name:
+            target.name = str.replace(target.name, " split", "")
         delta_t = end_time - start_time
         number_of_dots = (delta_t.sec / 60) / 1
         observe_time = start_time + delta_t * np.linspace(0, 1, number_of_dots)
-        if "split" in target.name:
-            target.name = str.replace(target.name, " split", "")
-            plot_sky(target, schedule.observer, observe_time, style_kwargs=dict(color=plt.cm.jet(color_idx[list(color_idx).index(ci)-1])),
-                     annotation=observation_nr)
-        else:
-            ax = plot_sky(target, schedule.observer, observe_time, style_kwargs=dict(color=plt.cm.jet(ci)),
-                     annotation=observation_nr)
+        ax = plot_sky(target, schedule.observer, observe_time, style_kwargs=dict(color=plt.cm.jet(colorDict[target.name])),
+                 annotation=observation_nr)
 
     for target, start_time, end_time, observation_nr, ci in zip(targetsCalibration[:,0], targetsCalibration[:,1], targetsCalibration[:,2],
                                                                 targetsCalibration[:,3], color_idx2):
         delta_t = end_time - start_time
         number_of_dots = (delta_t.sec / 60) / 1
         observe_time = start_time + delta_t * np.linspace(0, 1, number_of_dots)
-        ax = plot_sky(target, schedule.observer, observe_time, style_kwargs=dict(color=plt.cm.brg(ci), marker='x'),
+        ax = plot_sky(target, schedule.observer, observe_time, style_kwargs=dict(color=plt.cm.brg(colorDict[target.name]), marker='x'),
                  annotation=observation_nr)
 
     return ax

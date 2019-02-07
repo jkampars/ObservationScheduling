@@ -11,6 +11,7 @@ from collections import Sequence
 import warnings
 from matplotlib.pyplot import text
 
+from ..scheduling import ObservingBlock
 from ..exceptions import PlotWarning
 from ..utils import _set_mpl_style_sheet
 from .sky import plot_sky
@@ -477,14 +478,15 @@ def plot_schedule_altitude(schedule, show_night=False):
     import matplotlib.pyplot as plt
     ax = plt.gca()
     blocks = copy.copy(schedule.scheduled_blocks)
-    sorted_blocks = sorted(schedule.observing_blocks, key=lambda x: x.priority)
+    blocks = schedule.scheduled_blocks
     targets = []
     targetsCalibration = []
-    for block in sorted_blocks:
-        if block.calibration:
-            targetsCalibration.append(block.target)
-        else:
-            targets.append(block.target)
+    for block in blocks:
+        if isinstance(block, ObservingBlock):
+            if block.calibration:
+                targetsCalibration.append(block.target)
+            else:
+                targets.append(block.target)
 
     ts = (schedule.start_time +
           np.linspace(0, (schedule.end_time - schedule.start_time).value, 100) * u.day)

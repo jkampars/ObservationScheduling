@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QFormLayout, QGridLayout, QGr
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 
 from observation import Observation
@@ -92,8 +93,7 @@ class GUI(QWidget):
 
                 targetCoord = SkyCoord(frame='icrs', ra=ra, dec=dec, obstime="J2000")
                 target = FixedTarget(coord=targetCoord, name=sourceName)
-                self.targets.append(
-                    [target, int(row[3]), int(row[4]), int(row[5])])  # target / obs per_week / priority / scans per obs
+                self.targets.append([target, int(row[3]), int(row[4]), int(row[5])])  # target / obs per_week / priority / scans per obs
         self.targets = sorted(self.targets, key=lambda x: x[2])  # sort targets by priority
 
         self.calibrators = []
@@ -145,26 +145,38 @@ class GUI(QWidget):
 
             nameLabel = QLabel("Target:")
             nameBox = QLineEdit(target[0].name)
+            nameLabel.setParent(targetBox)
+            nameBox.setParent(targetBox)
             targetLayout.addRow(nameLabel, nameBox)
 
             raLabel = QLabel("Ra:")
             raBox = QLineEdit(target[0].coord.ra.to_string())
+            raLabel.setParent(targetBox)
+            raBox.setParent(targetBox)
             targetLayout.addRow(raLabel, raBox)
 
             decLabel = QLabel("Dec:")
             decBox = QLineEdit(target[0].coord.dec.to_string())
+            decLabel.setParent(targetBox)
+            decBox.setParent(targetBox)
             targetLayout.addRow(decLabel, decBox)
 
             priorityLabel = QLabel("Priority:")
             priorityBox = QLineEdit(str(target[2]))
+            priorityLabel.setParent(targetBox)
+            priorityBox.setParent(targetBox)
             targetLayout.addRow(priorityLabel, priorityBox)
 
             obsLabel = QLabel("Obs per week:")
             obsBox = QLineEdit(str(target[1]))
+            obsLabel.setParent(targetBox)
+            obsBox.setParent(targetBox)
             targetLayout.addRow(obsLabel, obsBox)
 
             scanLabel = QLabel("Scans per obs:")
             scanBox = QLineEdit(str(target[3]))
+            scanLabel.setParent(targetBox)
+            scanBox.setParent(targetBox)
             targetLayout.addRow(scanLabel, scanBox)
 
             targetBox.setLayout(targetLayout)
@@ -179,11 +191,28 @@ class GUI(QWidget):
         self.layout.addWidget(nextButton, 0, 8)
         self.setLayout(self.layout)
 
-    def start_schedule(self):
-        self.plots = []
 
+
+    def start_schedule(self):
+        items = (self.layout.itemAt(i).widget() for i in range(self.layout.count()))
+        self.targets = []
+        for item in items:
+            if type(item) is QGroupBox:
+                textboxes = []
+                for child in item.children():
+                    if type(child) is QLineEdit:
+                        textboxes.append(child.text())
+                sourceName = textboxes[0]
+                ra = textboxes[1]
+                dec = textboxes[2]
+                targetCoord = SkyCoord(frame='icrs', ra=ra, dec=dec, obstime="J2000")
+                target = FixedTarget(coord=targetCoord, name=sourceName)
+                self.targets.append([target, int(textboxes[4]), int(textboxes[3]),
+                                     int(textboxes[5])])  # target / obs per_week / priority / scans per obs
+        self.plots_idx = 0
+        self.plots = []
         self.schedules=[]
-        for day in self.week[:1]:
+        for day in self.week:
             dayStart = Time(day[0])  # convert from datetime to astropy.time
             dayEnd = Time(day[1])
 
@@ -242,41 +271,6 @@ class GUI(QWidget):
             with open("observations/" + day[0].strftime("%Y-%m-%d-%H-%M") + ".json", 'w') as outfile:
                 json.dump(json_dict, outfile, indent=4)
 
-
-            """
-            sky_plot = plot_schedule_sky(priority_schedule)
-            handles, labels = sky_plot.get_legend_handles_labels()
-            handle_list, label_list = [], []
-            for handle, label in zip(handles, labels):
-                if label not in label_list and handle not in handle_list:
-                    handle_list.append(handle)
-                    label_list.append(label)
-            plt.legend(handle_list, label_list, loc="center left", bbox_to_anchor=(1, 0.5))
-
-
-
-            print(sky_plot)
-            #print(sky_plot.get_children())
-            temp = []
-            temp.append(sky_plot)
-            #plt.show()
-            plt.close()
-            alt_plot = plot_schedule_altitude(priority_schedule)
-            print(alt_plot)
-            print(alt_plot.has_data())
-            temp.append(alt_plot)
-            self.plots.append(temp)
-
-            handles, labels = sky_plot.get_legend_handles_labels()
-            handle_list, label_list = [], []
-            for handle, label in zip(handles, labels):
-                if label not in label_list and handle not in handle_list:
-                    handle_list.append(handle)
-                    label_list.append(label)
-            plt.legend(handle_list, label_list, loc="center left", bbox_to_anchor=(1, 0.5))
-            #plt.show()
-            """
-
             self.schedules.append(priority_schedule)
         timeLeft = 0
         for target in self.targets:
@@ -288,17 +282,40 @@ class GUI(QWidget):
 
     def show_schedule(self):
         self.clear_window()
-
-        sky = Plot()
-        sky.plot_sky_schedule(self.schedules[0])
-        alt = Plot(width=6)
-        alt.plot_altitude_schedule(self.schedules[0])
-        nextButton = QPushButton("Next")
-        backButton = QPushButton("Back")
+        if len(self.plots) == 0 or self.plots_idx > (len(self.plots) - 1):
+            sky = Plot()
+            sky.plot_sky_schedule(self.schedules[self.plots_idx])
+            alt = Plot(width=6)
+            alt.plot_altitude_schedule(self.schedules[self.plots_idx])
+            self.plots.append([sky, alt])
+        else:
+            sky, alt = self.plots[self.plots_idx]
         self.layout.addWidget(sky, 0, 0, 1, 2)
         self.layout.addWidget(alt, 1, 0, 1, 2)
-        self.layout.addWidget(backButton, 2, 0)
-        self.layout.addWidget(nextButton, 2, 1)
+
+        self.toolbar = NavigationToolbar(alt, alt.parent)
+        self.layout.addWidget(self.toolbar, 2, 0, 1, 2)
+
+        nextButton = QPushButton("Next")
+        nextButton.clicked.connect(self.next_schedule)
+        backButton = QPushButton("Back")
+        backButton.clicked.connect(self.back_schedule)
+        self.layout.addWidget(backButton, 3, 0)
+        self.layout.addWidget(nextButton, 3, 1)
+        if self.plots_idx == 0:
+            backButton.hide()
+        if self.plots_idx == (len(self.schedules) - 1):
+            nextButton.hide()
+
+    def next_schedule(self):
+        self.plots_idx += 1
+        self.show_schedule()
+
+
+    def back_schedule(self):
+        self.plots_idx -= 1
+        self.show_schedule()
+
     def clear_window(self):
         for i in reversed(range(self.layout.count())):
             self.layout.itemAt(i).widget().setParent(None)

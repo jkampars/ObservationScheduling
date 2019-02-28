@@ -1043,7 +1043,7 @@ class SequentialScheduler(Scheduler):
                             lastBlock = newb
                         else:
                             break
-            timeLeft = self.schedule.end_time - self.schedule.scheduled_blocks[-1].end_time
+            timeLeft = self.schedule.end_time - current_time
             timeLeft = timeLeft.to_datetime()
             print("Time left - ", timeLeft)
             return self.schedule

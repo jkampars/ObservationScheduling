@@ -14,7 +14,6 @@ from matplotlib.pyplot import text
 from ..scheduling import ObservingBlock
 from ..exceptions import PlotWarning
 from ..utils import _set_mpl_style_sheet
-from .sky import plot_sky
 
 __all__ = ['plot_airmass', 'plot_schedule_airmass', 'plot_altitude', 'plot_schedule_altitude', 'plot_parallactic']
 
@@ -288,7 +287,7 @@ def plot_schedule_airmass(schedule, show_night=False):
 def plot_altitude(targets, observer, time, ax=None, style_kwargs=None,
                   style_sheet=None, brightness_shading=False,
                   airmass_yaxis=False, min_altitude=0, min_region=None,
-                  max_altitude=90, max_region=None):
+                  max_altitude=90, max_region=None, fig=None):
     r"""
     Plots altitude as a function of time for a given target.
     If a `~matplotlib.axes.Axes` object already exists, an additional
@@ -358,7 +357,10 @@ def plot_altitude(targets, observer, time, ax=None, style_kwargs=None,
 
     # Set up plot axes and style if needed.
     if ax is None:
-        ax = plt.gca()
+        if fig is None:
+            ax = plt.gca()
+        else:
+            ax = fig.gca()
     if style_kwargs is None:
         style_kwargs = {}
     style_kwargs = dict(style_kwargs)
@@ -458,7 +460,7 @@ def plot_altitude(targets, observer, time, ax=None, style_kwargs=None,
     return ax
 
 
-def plot_schedule_altitude(schedule, show_night=False):
+def plot_schedule_altitude(schedule, show_night=False, fig=None):
     """
     Plots when observations of targets are scheduled to occur superimposed
     upon plots of the altitude of the targets.
@@ -477,6 +479,8 @@ def plot_schedule_altitude(schedule, show_night=False):
     """
     import matplotlib.pyplot as plt
     ax = plt.gca()
+    if fig:
+        ax=fig.gca()
     blocks = copy.copy(schedule.scheduled_blocks)
     blocks = schedule.scheduled_blocks
     targets = []
@@ -495,10 +499,10 @@ def plot_schedule_altitude(schedule, show_night=False):
     # lighter, bluer colors indicate higher priority
     for target, ci in zip(set(targets), color_idx):
         if "split" not in target.name:
-            plot_altitude(target, schedule.observer, ts, ax, style_kwargs=dict(color=plt.cm.jet(ci)))
+            plot_altitude(target, schedule.observer, ts, ax,fig=fig, style_kwargs=dict(color=plt.cm.jet(ci)))
             targ_to_color[target.name] = plt.cm.jet(ci)
     for target in targetsCalibration:
-        plot_altitude(target, schedule.observer, ts, ax, style_kwargs=dict(color="red", linestyle=":"))
+        plot_altitude(target, schedule.observer, ts, ax, fig=fig, style_kwargs=dict(color="red", linestyle=":"))
     if show_night:
         # I'm pretty sure this overlaps a lot, creating darker bands
         for test_time in ts:

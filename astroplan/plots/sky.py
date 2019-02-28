@@ -17,7 +17,7 @@ __all__ = ['plot_sky', 'plot_schedule_sky', 'plot_sky_24hr']
 @u.quantity_input(az_label_offset=u.deg)
 def plot_sky(target, observer, time, ax=None, style_kwargs=None,
              north_to_east_ccw=True, grid=True, az_label_offset=0.0*u.deg,
-             warn_below_horizon=False, style_sheet=None, annotation=None):
+             warn_below_horizon=False, style_sheet=None, annotation=None, fig=None):
     """
     Plots target positions in the sky with respect to the observer's location.
 
@@ -118,7 +118,10 @@ def plot_sky(target, observer, time, ax=None, style_kwargs=None,
 
     # Set up axes & plot styles if needed.
     if ax is None:
-        ax = plt.gca(projection='polar')
+        if fig is None:
+            ax = plt.gca(projection='polar')
+        else:
+            ax = fig.gca(projection='polar')
     if style_kwargs is None:
         style_kwargs = {}
     style_kwargs = dict(style_kwargs)
@@ -229,7 +232,7 @@ def plot_sky(target, observer, time, ax=None, style_kwargs=None,
 
     return ax
 
-def plot_schedule_sky(schedule):
+def plot_schedule_sky(schedule, fig=None):
     """
     Plots when observations of targets are scheduled to occur superimposed
     upon plots of the altitude of the targets.
@@ -254,11 +257,9 @@ def plot_schedule_sky(schedule):
         if isinstance(block, ObservingBlock):
             if block.calibration:
                 targetsCalibration.append([block.target, block.start_time, block.end_time, observation_nr])
-                print(block.target.name, " ", observation_nr)
                 observation_nr = observation_nr + 1
             else:
                 targets.append([block.target, block.start_time, block.end_time, observation_nr])
-                print(block.target.name, " ", observation_nr)
                 observation_nr = observation_nr + 1
 
     targets = np.array(targets)
@@ -278,7 +279,7 @@ def plot_schedule_sky(schedule):
         delta_t = end_time - start_time
         number_of_dots = (delta_t.sec / 60) / 1
         observe_time = start_time + delta_t * np.linspace(0, 1, number_of_dots)
-        ax = plot_sky(target, schedule.observer, observe_time, style_kwargs=dict(color=plt.cm.jet(colorDict[target.name])),
+        ax = plot_sky(target, schedule.observer, observe_time, fig=fig, style_kwargs=dict(color=plt.cm.jet(colorDict[target.name])),
                  annotation=observation_nr)
 
     for target, start_time, end_time, observation_nr, ci in zip(targetsCalibration[:,0], targetsCalibration[:,1], targetsCalibration[:,2],
@@ -286,7 +287,7 @@ def plot_schedule_sky(schedule):
         delta_t = end_time - start_time
         number_of_dots = (delta_t.sec / 60) / 1
         observe_time = start_time + delta_t * np.linspace(0, 1, number_of_dots)
-        ax = plot_sky(target, schedule.observer, observe_time, style_kwargs=dict(color=plt.cm.brg(colorDict[target.name]), marker='x'),
+        ax = plot_sky(target, schedule.observer, observe_time, fig=fig, style_kwargs=dict(color=plt.cm.brg(colorDict[target.name]), marker='x'),
                  annotation=observation_nr)
 
     return ax

@@ -14,7 +14,7 @@ from astroplan.plots import  plot_schedule_altitude, plot_altitude, plot_schedul
 from dateutil.parser import parse
 from astroplan import is_always_observable, download_IERS_A
 from collections import OrderedDict
-from PyQt5.QtWidgets import QApplication, QWidget, QFormLayout, QGridLayout, QGroupBox, QLineEdit, QLabel, QPushButton, QProgressBar
+from PyQt5.QtWidgets import QApplication, QWidget, QFormLayout, QGridLayout, QGroupBox, QLineEdit, QLabel, QPushButton, QComboBox, QErrorMessage
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
@@ -25,7 +25,7 @@ from observation import Observation
 from googlecalendar import get_next_week_events, get_all_events
 from plot_qt5 import Plot
 
-import argparse
+import re
 import os
 import json
 import datetime
@@ -67,6 +67,7 @@ class GUI(QWidget):
         observe_time = Time(['2019-02-05 15:30:00'])
 
         self.targets = []
+        self.targetsDict = {}
         with open("config/config.csv", "r") as csvfile:
             next(csvfile)
             reader = csv.reader(csvfile, delimiter=",", quotechar="|")
@@ -80,13 +81,13 @@ class GUI(QWidget):
 
                 decText = row[2]
                 if (decText[0] != "-"):
-                    decText = insert(decText, '°', 2)
-                    decText = insert(decText, '′', 5)
-                    decText = insert(decText, '″', len(decText))
+                    decText = insert(decText, 'd', 2)
+                    decText = insert(decText, 'm', 5)
+                    decText = insert(decText, 's', len(decText))
                 else:
-                    decText = insert(decText, '°', 3)
-                    decText = insert(decText, '′', 6)
-                    decText = insert(decText, '″', len(decText))
+                    decText = insert(decText, 'd', 3)
+                    decText = insert(decText, 'm', 6)
+                    decText = insert(decText, 's', len(decText))
 
                 ra = Angle(raText)
                 dec = Angle(decText)
@@ -94,8 +95,9 @@ class GUI(QWidget):
                 targetCoord = SkyCoord(frame='icrs', ra=ra, dec=dec, obstime="J2000")
                 target = FixedTarget(coord=targetCoord, name=sourceName)
                 self.targets.append([target, int(row[3]), int(row[4]), int(row[5])])  # target / obs per_week / priority / scans per obs
+                coords = {"ra": ra, "dec": dec}
+                self.targetsDict[sourceName] = coords
         self.targets = sorted(self.targets, key=lambda x: x[2])  # sort targets by priority
-
         self.calibrators = []
         with open("config/calibrators.csv", "r") as csvfile:
             next(csvfile)
@@ -133,33 +135,32 @@ class GUI(QWidget):
                 dayEnd = parse(endArray[i])
                 self.week.append([dayStart, dayEnd])
 
+
+        self.layout = QGridLayout()
+        self.layout.setSpacing(0)
+        self.layout.setContentsMargins(0,0,0,0)
+
         self.load_ui()
 
     def load_ui(self):
-        self.layout = QGridLayout()
         row = 0
         column = 0
+
+
+
         for count, target in enumerate(self.targets[:20]):
             targetLayout = QFormLayout()
             targetBox = QGroupBox()
+            targetBox.setMaximumSize(250,150)
 
             nameLabel = QLabel("Target:")
-            nameBox = QLineEdit(target[0].name)
+            nameBox = QComboBox()
+            for key in self.targetsDict:
+                nameBox.addItem(key)
+            nameBox.setCurrentIndex(list(self.targetsDict.keys()).index(target[0].name))
             nameLabel.setParent(targetBox)
             nameBox.setParent(targetBox)
             targetLayout.addRow(nameLabel, nameBox)
-
-            raLabel = QLabel("Ra:")
-            raBox = QLineEdit(target[0].coord.ra.to_string())
-            raLabel.setParent(targetBox)
-            raBox.setParent(targetBox)
-            targetLayout.addRow(raLabel, raBox)
-
-            decLabel = QLabel("Dec:")
-            decBox = QLineEdit(target[0].coord.dec.to_string())
-            decLabel.setParent(targetBox)
-            decBox.setParent(targetBox)
-            targetLayout.addRow(decLabel, decBox)
 
             priorityLabel = QLabel("Priority:")
             priorityBox = QLineEdit(str(target[2]))
@@ -186,9 +187,13 @@ class GUI(QWidget):
             if column == 7:
                 row+=1
                 column = 0
+
         nextButton = QPushButton("Schedule")
         nextButton.clicked.connect(self.start_schedule)
         self.layout.addWidget(nextButton, 0, 8)
+        targetsButton = QPushButton("Targets")
+        targetsButton.clicked.connect(self.edit_targets)
+        self.layout.addWidget(targetsButton, 1, 8)
         self.setLayout(self.layout)
 
 
@@ -200,19 +205,19 @@ class GUI(QWidget):
             if type(item) is QGroupBox:
                 textboxes = []
                 for child in item.children():
+                    if type(child) is QComboBox:
+                        sourceName = child.currentText()
                     if type(child) is QLineEdit:
                         textboxes.append(child.text())
-                sourceName = textboxes[0]
-                ra = textboxes[1]
-                dec = textboxes[2]
+                ra = self.targetsDict[sourceName]["ra"]
+                dec = self.targetsDict[sourceName]["dec"]
                 targetCoord = SkyCoord(frame='icrs', ra=ra, dec=dec, obstime="J2000")
                 target = FixedTarget(coord=targetCoord, name=sourceName)
-                self.targets.append([target, int(textboxes[4]), int(textboxes[3]),
-                                     int(textboxes[5])])  # target / obs per_week / priority / scans per obs
+                self.targets.append([target, int(textboxes[1]), int(textboxes[0]),
+                                     int(textboxes[2])])  # target / obs per_week / priority / scans per obs
         self.plots_idx = 0
         self.plots = []
-        self.schedules=[]
-        for day in self.week:
+        for day in self.week[:1]:
             dayStart = Time(day[0])  # convert from datetime to astropy.time
             dayEnd = Time(day[1])
 
@@ -271,7 +276,13 @@ class GUI(QWidget):
             with open("observations/" + day[0].strftime("%Y-%m-%d-%H-%M") + ".json", 'w') as outfile:
                 json.dump(json_dict, outfile, indent=4)
 
-            self.schedules.append(priority_schedule)
+
+            sky = Plot()
+            sky.plot_sky_schedule(priority_schedule)
+            alt = Plot(width=6)
+            alt.plot_altitude_schedule(priority_schedule)
+            self.plots.append([sky, alt])
+
         timeLeft = 0
         for target in self.targets:
             timeLeft += target[1] * target[3]
@@ -282,14 +293,7 @@ class GUI(QWidget):
 
     def show_schedule(self):
         self.clear_window()
-        if len(self.plots) == 0 or self.plots_idx > (len(self.plots) - 1):
-            sky = Plot()
-            sky.plot_sky_schedule(self.schedules[self.plots_idx])
-            alt = Plot(width=6)
-            alt.plot_altitude_schedule(self.schedules[self.plots_idx])
-            self.plots.append([sky, alt])
-        else:
-            sky, alt = self.plots[self.plots_idx]
+        sky, alt = self.plots[self.plots_idx]
         self.layout.addWidget(sky, 0, 0, 1, 2)
         self.layout.addWidget(alt, 1, 0, 1, 2)
 
@@ -304,7 +308,7 @@ class GUI(QWidget):
         self.layout.addWidget(nextButton, 3, 1)
         if self.plots_idx == 0:
             backButton.hide()
-        if self.plots_idx == (len(self.schedules) - 1):
+        if self.plots_idx == (len(self.plots) - 1):
             nextButton.hide()
 
     def next_schedule(self):
@@ -315,6 +319,81 @@ class GUI(QWidget):
     def back_schedule(self):
         self.plots_idx -= 1
         self.show_schedule()
+
+    def edit_targets(self):
+        self.clear_window()
+
+        targetLayout = QGridLayout()
+        targetBox = QGroupBox()
+        targetBox.setMaximumSize(400,400)
+
+        nameLabel = QLabel("Target:")
+        nameLabel.setMaximumWidth(100)
+        self.target_nameBox = QComboBox()
+        for key in self.targetsDict:
+            self.target_nameBox.addItem(key)
+        self.target_nameBox.currentIndexChanged.connect(self.target_changed)
+        targetLayout.addWidget(nameLabel, 0, 0)
+        targetLayout.addWidget(self.target_nameBox, 0, 1)
+
+        raLabel = QLabel("Ra:")
+        self.target_raBox = QLineEdit()
+        raLabel.setParent(targetBox)
+        self.target_raBox.setParent(targetBox)
+        targetLayout.addWidget(raLabel, 1, 0)
+        targetLayout.addWidget(self.target_raBox, 1, 1)
+
+        decLabel = QLabel("Dec:")
+        self.target_decBox = QLineEdit()
+        decLabel.setParent(targetBox)
+        self.target_decBox.setParent(targetBox)
+        targetLayout.addWidget(decLabel, 2, 0)
+        targetLayout.addWidget(self.target_decBox, 2, 1)
+        saveButton = QPushButton("Save changes")
+        saveButton.clicked.connect(self.save_changes)
+        targetLayout.addWidget(saveButton, 3, 1)
+
+        backButton = QPushButton("Back")
+        backButton.clicked.connect(self.to_start)
+        targetLayout.addWidget(backButton, 4, 1)
+
+        targetBox.setLayout(targetLayout)
+        self.layout.addWidget(targetBox,0,0)
+
+
+    def target_changed(self):
+        target = self.targetsDict[self.target_nameBox.currentText()]
+        self.target_raBox.setText(target["ra"].to_string())
+        self.target_decBox.setText(target["dec"].to_string(unit=u.degree))
+
+    def save_changes(self):
+        targetName = self.target_nameBox.currentText()
+        raPattern = re.compile("[0-9]{2}h[0-9]{2}m[0-9]{2}\.[0-9]{2}s")
+        decPattern = re.compile("-?[0-9]{2}°[0-9]{2}'[0-9]{2}\\\"")
+        ra = self.target_raBox.text()
+        dec = self.target_decBox.text()
+        if not raPattern.match(ra):
+            error_dialog = QErrorMessage()
+            error_dialog.showMessage("Ra coordinates don't match pattern 00h00m00.00s")
+            error_dialog.exec_()
+        else:
+            self.targetsDict[targetName]["ra"] = Angle(ra)
+            self.targetsDict[targetName]["dec"] = Angle(dec)
+        """elif not decPattern.match(dec):
+            print(raPattern.match(ra))
+            print(decPattern.match(dec))
+            for char in dec:
+                print (char,"  ",ord(char))
+            print('-  ',ord('-'))
+            print('°  ',ord('°'))
+            print("'  ",ord("'"))
+            print('"  ',ord('"'))
+        else:
+            print("Ra and Dec correct")"""
+
+    def to_start(self):
+        self.clear_window()
+        self.load_ui()
 
     def clear_window(self):
         for i in reversed(range(self.layout.count())):

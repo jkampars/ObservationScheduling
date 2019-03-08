@@ -237,9 +237,9 @@ class GUI(QWidget):
     def prepare_schedule(self):
         items = (self.layout.itemAt(i).widget() for i in range(self.layout.count()))
         targets = []
-        priorityCheck = False
-        obs = []
-        scans = []
+        priorityCheck = True
+        obsCheck = True
+        scanCheck = True
         for item in items:
             if type(item) is QGroupBox:
                 textboxes = []
@@ -249,16 +249,28 @@ class GUI(QWidget):
                     if type(child) is QLineEdit:
                         textboxes.append(child.text())
                 priority = textboxes[0]
+                obs = textboxes[1]
+                scans = textboxes[2]
                 if str.isdigit(priority):
-                    if int(priority) > 0 and int(priority) <= 4:
-                        priorityCheck = True
-                priorities.append(textboxes[0])
-                obs.append(textboxes[1])
-                scans.append(textboxes[2])
+                    if int(priority) < 1 or int(priority) > 4:
+                        priorityCheck = False
+                if str.isdigit(obs):
+                    if int(obs) < 1 or int(obs) > 7:
+                        obsCheck = False
+                if str.isdigit(scans):
+                    if int(scans) < 1 or int(scans) > 120:
+                        scanCheck = False
+
         if len(targets) > len(set(targets)): #check if all values are unique
             self.show_error("All targets must be unique")
-
-        #self.start_schedule()
+        elif not priorityCheck:
+            self.show_error("All priorities must be from 1 to 4")
+        elif not obsCheck:
+            self.show_error("All obs must be from 1 to 7")
+        elif not scanCheck:
+            self.show_error("All scans must be from 1 to 120")
+        else:
+            self.start_schedule()
 
     def start_schedule(self):
         items = (self.layout.itemAt(i).widget() for i in range(self.layout.count()))
@@ -279,7 +291,7 @@ class GUI(QWidget):
                                      int(textboxes[2])])  # target / obs per_week / priority / scans per obs
         self.plots_idx = 0
         self.plots = []
-        for day in self.week[:1]:
+        for day in self.week[:3]:
             dayStart = Time(day[0])  # convert from datetime to astropy.time
             dayEnd = Time(day[1])
 

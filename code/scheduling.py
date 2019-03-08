@@ -112,13 +112,13 @@ class GUI(QWidget):
 
                 decText = str(row[2]).replace(" ", "")
                 if (decText[0] != "-"):
-                    decText = insert(decText, '°', 3)
-                    decText = insert(decText, '′', 6)
-                    decText = insert(decText, '″', len(decText))
+                    decText = insert(decText, 'd', 3)
+                    decText = insert(decText, 'm', 6)
+                    decText = insert(decText, 's', len(decText))
                 else:
-                    decText = insert(decText, '°', 3)
-                    decText = insert(decText, '′', 6)
-                    decText = insert(decText, '″', len(decText))
+                    decText = insert(decText, 'd', 3)
+                    decText = insert(decText, 'm', 6)
+                    decText = insert(decText, 's', len(decText))
 
                 ra = Angle(raText)
                 dec = Angle(decText)
@@ -180,6 +180,10 @@ class GUI(QWidget):
             scanBox.setParent(targetBox)
             targetLayout.addRow(scanLabel, scanBox)
 
+            removeButton = QPushButton("Remove target")
+            removeButton.clicked.connect(lambda state, x=targetBox: self.remove_target(x))
+            targetLayout.addRow(removeButton)
+
             targetBox.setLayout(targetLayout)
             self.layout.addWidget(targetBox, row, column)
             column+=1
@@ -189,14 +193,72 @@ class GUI(QWidget):
                 column = 0
 
         nextButton = QPushButton("Schedule")
-        nextButton.clicked.connect(self.start_schedule)
+        nextButton.clicked.connect(self.prepare_schedule)
         self.layout.addWidget(nextButton, 0, 8)
         targetsButton = QPushButton("Targets")
         targetsButton.clicked.connect(self.edit_targets)
         self.layout.addWidget(targetsButton, 1, 8)
         self.setLayout(self.layout)
 
+    def remove_target(self, targetBox):
+        idx = self.layout.indexOf(targetBox)
+        rowDel, colDel, temp1, temp2 = self.layout.getItemPosition(idx)
+        self.layout.removeWidget(targetBox)
 
+        for child in targetBox.children():
+            child.deleteLater()
+            child = None
+
+        targetBox.deleteLater()
+        targetBox = None
+        items = []
+
+        for i in range(self.layout.count()):
+            if not type(self.layout.itemAt(i)) == type(None):
+                items.append(self.layout.itemAt(i).widget())
+
+        for item in items:
+            if type(item) is QGroupBox:
+                idx = self.layout.indexOf(item)
+                row, col, temp1, temp2 = self.layout.getItemPosition(idx)
+                print(row, col)
+                if (row > rowDel) or (row == rowDel and col > colDel):
+                    self.layout.removeWidget(item)
+                    item.hide()
+                    if col == 0:
+                        col = 6
+                        row -= 1
+                    else:
+                        col -= 1
+                    self.layout.addWidget(item, row, col)
+                    item.show()
+
+
+    def prepare_schedule(self):
+        items = (self.layout.itemAt(i).widget() for i in range(self.layout.count()))
+        targets = []
+        priorityCheck = False
+        obs = []
+        scans = []
+        for item in items:
+            if type(item) is QGroupBox:
+                textboxes = []
+                for child in item.children():
+                    if type(child) is QComboBox:
+                        targets.append(child.currentText())
+                    if type(child) is QLineEdit:
+                        textboxes.append(child.text())
+                priority = textboxes[0]
+                if str.isdigit(priority):
+                    if int(priority) > 0 and int(priority) <= 4:
+                        priorityCheck = True
+                priorities.append(textboxes[0])
+                obs.append(textboxes[1])
+                scans.append(textboxes[2])
+        if len(targets) > len(set(targets)): #check if all values are unique
+            self.show_error("All targets must be unique")
+
+        #self.start_schedule()
 
     def start_schedule(self):
         items = (self.layout.itemAt(i).widget() for i in range(self.layout.count()))
@@ -306,6 +368,10 @@ class GUI(QWidget):
         backButton.clicked.connect(self.back_schedule)
         self.layout.addWidget(backButton, 3, 0)
         self.layout.addWidget(nextButton, 3, 1)
+
+        startButton = QPushButton("To start")
+        startButton.clicked.connect(self.to_start)
+        self.layout.addWidget(startButton, 4, 0)
         if self.plots_idx == 0:
             backButton.hide()
         if self.plots_idx == (len(self.plots) - 1):
@@ -368,14 +434,14 @@ class GUI(QWidget):
 
     def save_changes(self):
         targetName = self.target_nameBox.currentText()
-        raPattern = re.compile("[0-9]{2}h[0-9]{2}m[0-9]{2}\.[0-9]{2}s")
-        decPattern = re.compile("-?[0-9]{2}°[0-9]{2}'[0-9]{2}\\\"")
+        raPattern = re.compile("[0-9]{2}h[0-9]{2}m[0-9]{2}(\.[0-9]{1,3})?s")
+        decPattern = re.compile("-?[0-9]{2}d[0-9]{2}m[0-9]{2}(\.[0-9]{1,3})?s")
         ra = self.target_raBox.text()
         dec = self.target_decBox.text()
         if not raPattern.match(ra):
-            error_dialog = QErrorMessage()
-            error_dialog.showMessage("Ra coordinates don't match pattern 00h00m00.00s")
-            error_dialog.exec_()
+            self.show_error("Ra coordinates don't match pattern 00h00m00.00s")
+        elif not decPattern.match(dec):
+            self.show_error("Dec coordinates don't match pattern 00d00m00.00s")
         else:
             self.targetsDict[targetName]["ra"] = Angle(ra)
             self.targetsDict[targetName]["dec"] = Angle(dec)
@@ -390,6 +456,11 @@ class GUI(QWidget):
             print('"  ',ord('"'))
         else:
             print("Ra and Dec correct")"""
+
+    def show_error(self, error_message):
+        error_dialog = QErrorMessage()
+        error_dialog.showMessage(str(error_message))
+        error_dialog.exec_()
 
     def to_start(self):
         self.clear_window()

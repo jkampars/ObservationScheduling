@@ -7,21 +7,21 @@ from astropy.time import Time
 from astropy.utils import iers
 from urllib.request import urlopen
 from urllib.error import HTTPError, URLError
-from astroplan import Observer, FixedTarget, ObservingBlock, TransitionBlock
+from astroplan import Observer, FixedTarget, ObservingBlock
 from astroplan.constraints import AltitudeConstraint
-from astroplan.scheduling import Transitioner, PriorityScheduler, Schedule, SequentialScheduler
+from astroplan.scheduling import Transitioner, Schedule, SequentialScheduler
 from astroplan.plots import  plot_schedule_altitude, plot_altitude, plot_schedule_sky, plot_sky
 from dateutil.parser import parse
 from astroplan import is_always_observable, download_IERS_A
 from collections import OrderedDict
-from PyQt5.QtWidgets import QApplication, QWidget, QFormLayout, QGridLayout, QGroupBox, QLineEdit, QLabel, QPushButton, QComboBox, QErrorMessage
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.figure import Figure
+from PyQt5.QtWidgets import QApplication, QWidget, QFormLayout, QGridLayout, QGroupBox, QLineEdit, QLabel, QPushButton, QComboBox, QMessageBox, QListWidget, QListWidgetItem
+from PyQt5.QtCore import Qt
+import numpy as np
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 
 from observation import Observation
+from plannedObs import PlannedObs
 from googlecalendar import get_next_week_events, get_all_events
 from plot_qt5 import Plot
 
@@ -94,10 +94,12 @@ class GUI(QWidget):
 
                 targetCoord = SkyCoord(frame='icrs', ra=ra, dec=dec, obstime="J2000")
                 target = FixedTarget(coord=targetCoord, name=sourceName)
-                self.targets.append([target, int(row[3]), int(row[4]), int(row[5])])  # target / obs per_week / priority / scans per obs
+                plannedObs = PlannedObs(target, int(row[4]), int(row[3]), int(row[5]))
+                self.targets.append(plannedObs)  # target / obs per_week / priority / scans per obs
                 coords = {"ra": ra, "dec": dec}
                 self.targetsDict[sourceName] = coords
-        self.targets = sorted(self.targets, key=lambda x: x[2])  # sort targets by priority
+
+        self.targets = sorted(self.targets, key=lambda x: x.priority)  # sort targets by priority
         self.calibrators = []
         with open("config/calibrators.csv", "r") as csvfile:
             next(csvfile)
@@ -127,171 +129,267 @@ class GUI(QWidget):
                 calibrator = FixedTarget(coord=calibratorCoord, name=sourceName)
                 self.calibrators.append(calibrator)
 
-        self.week = []
         startArray, endArray, summaryArray = get_next_week_events()
-        for i in range(len(startArray)):
-            if (summaryArray[i] == "RT-16 maser"):
-                dayStart = parse(startArray[i])
-                dayEnd = parse(endArray[i])
-                self.week.append([dayStart, dayEnd])
+        self.dateList = QListWidget()
 
+        for i in range(len(startArray)):
+            dayStart = parse(startArray[i])
+            dayEnd = parse(endArray[i])
+            daySummary = summaryArray[i]
+            daySummary = daySummary + " " + str(dayStart.date()) + " " + str(dayStart.time()) + "-" + str(dayEnd.time())
+            item = QListWidgetItem(daySummary, self.dateList)
+            item.setData(Qt.UserRole, [dayStart, dayEnd])
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setCheckState(Qt.Unchecked)
+            self.dateList.addItem(item)
 
         self.layout = QGridLayout()
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0,0,0,0)
+        self.setLayout(self.layout)
+        self.resize(1000, 600)
 
         self.load_ui()
 
     def load_ui(self):
-        row = 0
-        column = 0
+        self.observationList = QListWidget()
+        self.plannedTargets = []
+        for target in self.targets[:20]:
+            item = QListWidgetItem(str(target), self.observationList)
+            item.setData(Qt.UserRole, target)
+            self.observationList.addItem(item)
+            self.plannedTargets.append(target.name)
 
+        self.layout.addWidget(self.observationList, 0, 0, 10, 2)
 
+        self.observationList.itemSelectionChanged.connect(self.obsChanged)
 
-        for count, target in enumerate(self.targets[:20]):
-            targetLayout = QFormLayout()
-            targetBox = QGroupBox()
-            targetBox.setMaximumSize(250,150)
+        for index in range(self.observationList.count()):
+            item = self.observationList.item(index)
+            print(item.data(Qt.UserRole))
 
-            nameLabel = QLabel("Target:")
-            nameBox = QComboBox()
-            for key in self.targetsDict:
-                nameBox.addItem(key)
-            nameBox.setCurrentIndex(list(self.targetsDict.keys()).index(target[0].name))
-            nameLabel.setParent(targetBox)
-            nameBox.setParent(targetBox)
-            targetLayout.addRow(nameLabel, nameBox)
+        targetLayout = QFormLayout()
+        targetBox = QGroupBox()
+        targetBox.setMaximumSize(350, 250)
 
-            priorityLabel = QLabel("Priority:")
-            priorityBox = QLineEdit(str(target[2]))
-            priorityLabel.setParent(targetBox)
-            priorityBox.setParent(targetBox)
-            targetLayout.addRow(priorityLabel, priorityBox)
+        nameLabel = QLabel("Target:")
+        self.nameBox = QLineEdit()
+        self.nameBox.setEnabled(False)
+        nameLabel.setParent(targetBox)
+        self.nameBox.setParent(targetBox)
+        targetLayout.addRow(nameLabel, self.nameBox)
 
-            obsLabel = QLabel("Obs per week:")
-            obsBox = QLineEdit(str(target[1]))
-            obsLabel.setParent(targetBox)
-            obsBox.setParent(targetBox)
-            targetLayout.addRow(obsLabel, obsBox)
+        priorityLabel = QLabel("Priority:")
+        self.priorityBox = QLineEdit()
+        priorityLabel.setParent(targetBox)
+        self.priorityBox.setParent(targetBox)
+        targetLayout.addRow(priorityLabel, self.priorityBox)
 
-            scanLabel = QLabel("Scans per obs:")
-            scanBox = QLineEdit(str(target[3]))
-            scanLabel.setParent(targetBox)
-            scanBox.setParent(targetBox)
-            targetLayout.addRow(scanLabel, scanBox)
+        obsLabel = QLabel("Obs per week:")
+        self.obsBox = QLineEdit()
+        obsLabel.setParent(targetBox)
+        self.obsBox.setParent(targetBox)
+        targetLayout.addRow(obsLabel, self.obsBox)
 
-            removeButton = QPushButton("Remove target")
-            removeButton.clicked.connect(lambda state, x=targetBox: self.remove_target(x))
-            targetLayout.addRow(removeButton)
+        scanLabel = QLabel("Scans per obs:")
+        self.scanBox = QLineEdit()
+        scanLabel.setParent(targetBox)
+        self.scanBox.setParent(targetBox)
+        targetLayout.addRow(scanLabel, self.scanBox)
 
-            targetBox.setLayout(targetLayout)
-            self.layout.addWidget(targetBox, row, column)
-            column+=1
+        saveButton = QPushButton("Save changes")
+        saveButton.clicked.connect(self.save_obs_changes)
+        targetLayout.addRow(saveButton)
 
-            if column == 7:
-                row+=1
-                column = 0
+        removeButton = QPushButton("Remove target")
+        removeButton.clicked.connect(self.remove_obs)
+        targetLayout.addRow(removeButton)
+
+        targetBox.setLayout(targetLayout)
+        self.layout.addWidget(targetBox, 0, 2, 2, 1)
+
+        self.targetComboBox = QComboBox()
+        for key in self.targetsDict:
+            if key not in self.plannedTargets:
+                self.targetComboBox.addItem(key)
+        self.layout.addWidget(self.targetComboBox, 2, 2)
+
+        addButton = QPushButton("Add observation")
+        addButton.clicked.connect(self.add_obs)
+        self.layout.addWidget(addButton, 3, 2)
 
         nextButton = QPushButton("Schedule")
         nextButton.clicked.connect(self.prepare_schedule)
-        self.layout.addWidget(nextButton, 0, 8)
+        self.layout.addWidget(nextButton, 0, 3)
+        datesButton = QPushButton("Dates")
+        datesButton.clicked.connect(self.edit_dates)
+        self.layout.addWidget(datesButton, 1, 3)
         targetsButton = QPushButton("Targets")
         targetsButton.clicked.connect(self.edit_targets)
-        self.layout.addWidget(targetsButton, 1, 8)
-        self.setLayout(self.layout)
+        self.layout.addWidget(targetsButton, 2, 3)
 
-    def remove_target(self, targetBox):
-        idx = self.layout.indexOf(targetBox)
-        rowDel, colDel, temp1, temp2 = self.layout.getItemPosition(idx)
-        self.layout.removeWidget(targetBox)
+    def obsChanged(self):
+        if len(self.observationList.selectedItems()) > 0:
+            item = self.observationList.currentItem()
+            plannedObs = item.data(Qt.UserRole)
+            self.nameBox.setText(plannedObs.name)
+            self.priorityBox.setText(str(plannedObs.priority))
+            self.obsBox.setText(str(plannedObs.obs_per_week))
+            self.scanBox.setText(str(plannedObs.scans_per_obs))
+        else:
+            self.nameBox.setText("")
+            self.priorityBox.setText("")
+            self.obsBox.setText("")
+            self.scanBox.setText("")
 
-        for child in targetBox.children():
-            child.deleteLater()
-            child = None
+    def remove_obs(self):
+        if len(self.observationList.selectedItems()) > 0:
+            self.plannedTargets.remove(self.observationList.currentItem().data(Qt.UserRole).name)
+            self.targetComboBox.addItem(self.observationList.currentItem().data(Qt.UserRole).name)
+            self.observationList.takeItem(self.observationList.currentRow())
+        else:
+            self.show_error("Observation error","Select an observation to remove it")
 
-        targetBox.deleteLater()
-        targetBox = None
-        items = []
 
-        for i in range(self.layout.count()):
-            if not type(self.layout.itemAt(i)) == type(None):
-                items.append(self.layout.itemAt(i).widget())
+    def save_obs_changes(self):
+        if not self.priorityBox.text().isdigit():
+            self.show_error("Priority error", "Priority must be from 1 to 4")
+        elif int(self.priorityBox.text()) > 4 or int(self.priorityBox.text()) < 0:
+            self.show_error("Priority error", "Priority must be from 1 to 4")
+        elif not self.obsBox.text().isdigit():
+            self.show_error("Obs error", "Obs must be from 1 to 7")
+        elif int(self.obsBox.text()) > 7 or int(self.obsBox.text()) < 0:
+            self.show_error("Obs error", "Obs must be from 1 to 7")
+        elif not self.scanBox.text().isdigit():
+            self.show_error("Scan error", "Scan must be from 1 to 120")
+        elif int(self.scanBox.text()) > 120 or int(self.scanBox.text()) < 0:
+            self.show_error("Scan error", "Scan must be from 1 to 120")
+        else:
+            self.observationList.currentItem().data(Qt.UserRole).priority = int(self.priorityBox.text())
+            self.observationList.currentItem().data(Qt.UserRole).obs_per_week = int(self.obsBox.text())
+            self.observationList.currentItem().data(Qt.UserRole).scans_per_obs = int(self.scanBox.text())
+            self.observationList.currentItem().setText(str(self.observationList.currentItem().data(Qt.UserRole)))
 
-        for item in items:
-            if type(item) is QGroupBox:
-                idx = self.layout.indexOf(item)
-                row, col, temp1, temp2 = self.layout.getItemPosition(idx)
-                print(row, col)
-                if (row > rowDel) or (row == rowDel and col > colDel):
-                    self.layout.removeWidget(item)
-                    item.hide()
-                    if col == 0:
-                        col = 6
-                        row -= 1
-                    else:
-                        col -= 1
-                    self.layout.addWidget(item, row, col)
-                    item.show()
+    def add_obs(self):
+        if self.targetComboBox.count() > 0:
+            targetName = self.targetComboBox.currentText()
+            ra = self.targetsDict[targetName]["ra"]
+            dec = self.targetsDict[targetName]["dec"]
+            coord = SkyCoord(frame='icrs', ra=ra, dec=dec, obstime="J2000")
+            target = FixedTarget(coord=coord, name=targetName)
+            data = PlannedObs(target, 1, 1, 1)
+            item = QListWidgetItem(str(data), self.observationList)
+            item.setData(Qt.UserRole, data)
+            self.observationList.addItem(item)
+            self.plannedTargets.append(data.name)
+            self.targetComboBox.removeItem(self.targetComboBox.currentIndex())
 
+    def edit_dates(self):
+        self.clear_window()
+        self.layout.addWidget(self.dateList, 0, 0, 5, 2)
+        backButton = QPushButton("Back to planner")
+        self.layout.addWidget(backButton, 1, 2)
+        backButton.clicked.connect(self.to_start)
+
+    def edit_targets(self):
+        self.clear_window()
+
+        self.targetList = QListWidget()
+        self.layout.addWidget(self.targetList, 0, 0, 3, 1)
+        targetLayout = QGridLayout()
+        targetLayout.addWidget(QLabel("Ra:"), 0, 0)
+        self.raBox = QLineEdit()
+        targetLayout.addWidget(self.raBox, 0, 1)
+        targetLayout.addWidget(QLabel("Dec:"), 1, 0)
+        self.decBox = QLineEdit()
+        targetLayout.addWidget(self.decBox, 1, 1)
+
+        for key in self.targetsDict:
+            self.targetList.addItem(key)
+
+        self.targetList.itemClicked.connect(self.targetChanged)
+
+        self.saveButton = QPushButton("Save changes")
+        self.saveButton.clicked.connect(self.save_changes)
+        targetLayout.addWidget(self.saveButton, 2, 0, 1, 2)
+        targetBox = QGroupBox()
+        targetBox.setLayout(targetLayout)
+        self.layout.addWidget(targetBox, 0, 1)
+        self.saveButton.setEnabled(False)
+        backButton = QPushButton("Back to planner")
+        self.layout.addWidget(backButton, 0, 3)
+        backButton.clicked.connect(self.to_start)
+
+    def targetChanged(self, item):
+        if not self.saveButton.isEnabled():
+            self.saveButton.setEnabled(True)
+        targetName = item.text()
+        target = self.targetsDict[targetName]
+        self.raBox.setText(target["ra"].to_string())
+        self.decBox.setText(target["dec"].to_string(unit=u.degree))
+
+    def save_changes(self):
+        if len(self.targetList.selectedItems()) != 1:
+            self.show_error("Target error", "Make sure you have selected only 1 target")
+        else:
+            targetName = self.targetList.selectedItems()[0].text()
+            raPattern = re.compile("[0-9]{1,2}h[0-9]{1,2}m[0-9]{1,2}(\.[0-9]{1,3})?s")
+            decPattern = re.compile("-?[0-9]{1,2}d[0-9]{1,2}m[0-9]{1,2}(\.[0-9]{1,3})?s")
+            ra = self.raBox.text()
+            dec = self.decBox.text()
+            if not raPattern.match(ra):
+                self.show_error("Ra error", "Ra coordinates don't match pattern 00h00m00.00s")
+            elif not decPattern.match(dec):
+                self.show_error("Dec error", "Dec coordinates don't match pattern 00d00m00.00s")
+            else:
+                self.targetsDict[targetName]["ra"] = Angle(ra)
+                self.targetsDict[targetName]["dec"] = Angle(dec)
 
     def prepare_schedule(self):
-        items = (self.layout.itemAt(i).widget() for i in range(self.layout.count()))
-        targets = []
-        priorityCheck = True
-        obsCheck = True
-        scanCheck = True
-        for item in items:
-            if type(item) is QGroupBox:
-                textboxes = []
-                for child in item.children():
-                    if type(child) is QComboBox:
-                        targets.append(child.currentText())
-                    if type(child) is QLineEdit:
-                        textboxes.append(child.text())
-                priority = textboxes[0]
-                obs = textboxes[1]
-                scans = textboxes[2]
-                if str.isdigit(priority):
-                    if int(priority) < 1 or int(priority) > 4:
-                        priorityCheck = False
-                if str.isdigit(obs):
-                    if int(obs) < 1 or int(obs) > 7:
-                        obsCheck = False
-                if str.isdigit(scans):
-                    if int(scans) < 1 or int(scans) > 120:
-                        scanCheck = False
-
-        if len(targets) > len(set(targets)): #check if all values are unique
-            self.show_error("All targets must be unique")
-        elif not priorityCheck:
-            self.show_error("All priorities must be from 1 to 4")
-        elif not obsCheck:
-            self.show_error("All obs must be from 1 to 7")
-        elif not scanCheck:
-            self.show_error("All scans must be from 1 to 120")
+        hasDate = False
+        for index in range(self.dateList.count()):
+            if self.dateList.item(index).checkState() == Qt.Checked:
+                hasDate = True
+                break
+        if not hasDate:
+            self.show_error("Date error", "No dates selected for schedule")
         else:
             self.start_schedule()
 
     def start_schedule(self):
         items = (self.layout.itemAt(i).widget() for i in range(self.layout.count()))
         self.targets = []
-        for item in items:
-            if type(item) is QGroupBox:
-                textboxes = []
-                for child in item.children():
-                    if type(child) is QComboBox:
-                        sourceName = child.currentText()
-                    if type(child) is QLineEdit:
-                        textboxes.append(child.text())
-                ra = self.targetsDict[sourceName]["ra"]
-                dec = self.targetsDict[sourceName]["dec"]
-                targetCoord = SkyCoord(frame='icrs', ra=ra, dec=dec, obstime="J2000")
-                target = FixedTarget(coord=targetCoord, name=sourceName)
-                self.targets.append([target, int(textboxes[1]), int(textboxes[0]),
-                                     int(textboxes[2])])  # target / obs per_week / priority / scans per obs
+        for index in range(self.observationList.count()):
+            item = self.observationList.item(index)
+            target = item.data(Qt.UserRole)
+            self.targets.append(target)
+
+        targ_to_color = {}
+        color_idx = np.linspace(0, 1, len(self.targets))
+        # lighter, bluer colors indicate higher
+        for target, ci in zip(set(self.targets), color_idx):
+            if "split" not in target.name:
+                if target.name not in targ_to_color:
+                    targ_to_color[target.name] = plt.cm.jet(ci)
+
+        calib_to_color = {}
+        color_idx = np.linspace(0, 1, len(self.calibrators))
+        # lighter, bluer colors indicate higher
+        for calibrator, ci in zip(set(self.calibrators), color_idx):
+            if "split" not in calibrator.name:
+                if calibrator.name not in calib_to_color:
+                    calib_to_color[calibrator.name] = plt.cm.brg(ci)
+
         self.plots_idx = 0
         self.plots = []
-        for day in self.week[:3]:
+
+        week = []
+
+        for index in range(self.dateList.count()):
+            if self.dateList.item(index).checkState() == Qt.Checked:
+                week.append([self.dateList.item(index).data(Qt.UserRole)[0], self.dateList.item(index).data(Qt.UserRole)[1]])
+
+        for day in week:
             dayStart = Time(day[0])  # convert from datetime to astropy.time
             dayEnd = Time(day[1])
 
@@ -304,12 +402,12 @@ class GUI(QWidget):
             blocks = []
 
             for target in self.targets:
-                if (not is_always_observable(constraints, self.irbene, target[0], times=[dayStart, dayEnd])):
-                    print(target[0].name, " is not observable")
-                n = target[3]
-                priority = target[2]
-                if (target[1] != 0):
-                    b = ObservingBlock.from_exposures(target[0], priority, target_exp, n, read_out)
+                if (not is_always_observable(constraints, self.irbene, target.target, times=[dayStart, dayEnd])):
+                    print(target.name, " is not observable")
+                n = target.scans_per_obs
+                priority = target.priority
+                if (target.obs_per_week != 0):
+                    b = ObservingBlock.from_exposures(target.target, priority, target_exp, n, read_out)
                     blocks.append(b)
 
             slew_rate = 2 * u.deg / u.second
@@ -318,7 +416,7 @@ class GUI(QWidget):
             prior_scheduler = SequentialScheduler(constraints=constraints, observer=self.irbene, transitioner=transitioner,
                                                   calibrators=self.calibrators, firstSchedule=True)
 
-            priority_schedule = Schedule(dayStart, dayEnd)
+            priority_schedule = Schedule(dayStart, dayEnd, targColor=targ_to_color, calibColor=calib_to_color)
             prior_scheduler(blocks, priority_schedule)
 
             observations = []
@@ -332,9 +430,9 @@ class GUI(QWidget):
             dict_array = []
             for observation in observations:
                 for target in self.targets:
-                    if target[0].name == observation.name:
-                        print(target[0].name, " has been observed once")
-                        target[1] = target[1] - 1
+                    if target.name == observation.name:
+                        print(target.name, " has been observed once")
+                        target.obs_per_week -= 1
                 dict_array.append({
                     "obs_name": observation.name,
                     "start_time": observation.start_time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -359,8 +457,8 @@ class GUI(QWidget):
 
         timeLeft = 0
         for target in self.targets:
-            timeLeft += target[1] * target[3]
-            print(target[0].name, ' observations left ', target[1], ' scan size ', target[3], ' priority ', target[2])
+            timeLeft += target.obs_per_week * target.scans_per_obs
+            print(target.name, ' observations left ', target.obs_per_week, ' scan size ', target.scans_per_obs, ' priority ', target.priority)
         print('Total time left to observe ', timeLeft)
 
         self.show_schedule()
@@ -398,81 +496,8 @@ class GUI(QWidget):
         self.plots_idx -= 1
         self.show_schedule()
 
-    def edit_targets(self):
-        self.clear_window()
-
-        targetLayout = QGridLayout()
-        targetBox = QGroupBox()
-        targetBox.setMaximumSize(400,400)
-
-        nameLabel = QLabel("Target:")
-        nameLabel.setMaximumWidth(100)
-        self.target_nameBox = QComboBox()
-        for key in self.targetsDict:
-            self.target_nameBox.addItem(key)
-        self.target_nameBox.currentIndexChanged.connect(self.target_changed)
-        targetLayout.addWidget(nameLabel, 0, 0)
-        targetLayout.addWidget(self.target_nameBox, 0, 1)
-
-        raLabel = QLabel("Ra:")
-        self.target_raBox = QLineEdit()
-        raLabel.setParent(targetBox)
-        self.target_raBox.setParent(targetBox)
-        targetLayout.addWidget(raLabel, 1, 0)
-        targetLayout.addWidget(self.target_raBox, 1, 1)
-
-        decLabel = QLabel("Dec:")
-        self.target_decBox = QLineEdit()
-        decLabel.setParent(targetBox)
-        self.target_decBox.setParent(targetBox)
-        targetLayout.addWidget(decLabel, 2, 0)
-        targetLayout.addWidget(self.target_decBox, 2, 1)
-        saveButton = QPushButton("Save changes")
-        saveButton.clicked.connect(self.save_changes)
-        targetLayout.addWidget(saveButton, 3, 1)
-
-        backButton = QPushButton("Back")
-        backButton.clicked.connect(self.to_start)
-        targetLayout.addWidget(backButton, 4, 1)
-
-        targetBox.setLayout(targetLayout)
-        self.layout.addWidget(targetBox,0,0)
-
-
-    def target_changed(self):
-        target = self.targetsDict[self.target_nameBox.currentText()]
-        self.target_raBox.setText(target["ra"].to_string())
-        self.target_decBox.setText(target["dec"].to_string(unit=u.degree))
-
-    def save_changes(self):
-        targetName = self.target_nameBox.currentText()
-        raPattern = re.compile("[0-9]{2}h[0-9]{2}m[0-9]{2}(\.[0-9]{1,3})?s")
-        decPattern = re.compile("-?[0-9]{2}d[0-9]{2}m[0-9]{2}(\.[0-9]{1,3})?s")
-        ra = self.target_raBox.text()
-        dec = self.target_decBox.text()
-        if not raPattern.match(ra):
-            self.show_error("Ra coordinates don't match pattern 00h00m00.00s")
-        elif not decPattern.match(dec):
-            self.show_error("Dec coordinates don't match pattern 00d00m00.00s")
-        else:
-            self.targetsDict[targetName]["ra"] = Angle(ra)
-            self.targetsDict[targetName]["dec"] = Angle(dec)
-        """elif not decPattern.match(dec):
-            print(raPattern.match(ra))
-            print(decPattern.match(dec))
-            for char in dec:
-                print (char,"  ",ord(char))
-            print('-  ',ord('-'))
-            print('°  ',ord('°'))
-            print("'  ",ord("'"))
-            print('"  ',ord('"'))
-        else:
-            print("Ra and Dec correct")"""
-
-    def show_error(self, error_message):
-        error_dialog = QErrorMessage()
-        error_dialog.showMessage(str(error_message))
-        error_dialog.exec_()
+    def show_error(self, title, error_message):
+        error_dialog = QMessageBox.critical(self, title, error_message)
 
     def to_start(self):
         self.clear_window()

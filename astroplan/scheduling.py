@@ -232,7 +232,7 @@ class Schedule(object):
     # as currently written, there should be no consecutive unoccupied slots
     # this should change to allow for more flexibility (e.g. dark slots, grey slots)
 
-    def __init__(self, start_time, end_time, constraints=None):
+    def __init__(self, start_time, end_time, targColor = None, calibColor = None, constraints=None):
         """
         Parameters
         -----------
@@ -249,6 +249,8 @@ class Schedule(object):
         self.end_time = end_time
         self.slots = [Slot(start_time, end_time)]
         self.observer = None
+        self.targColor = targColor
+        self.calibColor = calibColor
 
     def __repr__(self):
         return ('Schedule containing ' + str(len(self.observing_blocks)) +
@@ -601,9 +603,10 @@ class SequentialScheduler(Scheduler):
     moves on.
     """
 
-    def __init__(self, calibrators=None, firstSchedule=False, *args, **kwargs):
+    def __init__(self, calibrators=None, firstSchedule=False, colorDict=None, *args, **kwargs):
         self.calibrators = calibrators
         self.firstSchedule = firstSchedule
+        self.colorDict = colorDict
         super(SequentialScheduler, self).__init__(*args, **kwargs)
 
 
@@ -885,7 +888,6 @@ class SequentialScheduler(Scheduler):
                         timeStart = calibratorBlock.end_time
 
                         self.schedule.insert_slot(calibratorBlock.start_time, calibratorBlock)
-                        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Observed ", calibratorBlock.target.name)
                         lastBlock = calibratorBlock
                         trans = self.transitioner(blocks[bestblock_idx], b, current_time, self.observer)
                         transition_time = 0 * u.second if trans is None else trans.duration
@@ -923,7 +925,6 @@ class SequentialScheduler(Scheduler):
                             current_time += calibratorBlock.duration
                             calibratorBlock.end_time = current_time
                             self.schedule.insert_slot(calibratorBlock.start_time, calibratorBlock)
-                            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Observed ", calibratorBlock.target.name)
                             lastBlock = calibratorBlock
                             timeStart = calibratorBlock.end_time
                         else:
@@ -944,7 +945,6 @@ class SequentialScheduler(Scheduler):
                             target2 = FixedTarget(newb.target.coord, newb.target.name)
                             halfBlock2 = ObservingBlock(target2, newb.duration / 2, newb.priority)
                             halfBlock2.target.name += " split"
-                            print(newb.duration," / 2 = ",halfBlock.duration)
                             trans1 = self.transitioner(lastBlock, halfBlock, current_time, self.observer)
                             trans_time1 = 0 * u.second
                             if trans1 is not None:
@@ -983,7 +983,6 @@ class SequentialScheduler(Scheduler):
                                     halfBlock.end_time = current_time + halfBlock.duration
                                     halfBlock.constraints_value = block_constraint_results[bestblock_idx]
                                     self.schedule.insert_slot(halfBlock.start_time, halfBlock)
-                                    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Observed ", halfBlock.target.name)
                                     if trans2 is not None:
                                         self.schedule.insert_slot(trans2.start_time, trans2)
                                         current_time += trans2.duration
@@ -991,7 +990,6 @@ class SequentialScheduler(Scheduler):
                                     current_time += calibratorBlock.duration
                                     calibratorBlock.end_time = current_time + calibratorBlock.duration
                                     self.schedule.insert_slot(calibratorBlock.start_time, calibratorBlock)
-                                    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Observed ", calibratorBlock.target.name)
                                     timeStart = calibratorBlock.end_time
                                     if trans3 is not None:
                                         self.schedule.insert_slot(trans3.start_time, trans3)
@@ -1001,7 +999,6 @@ class SequentialScheduler(Scheduler):
                                     halfBlock2.end_time = current_time + halfBlock2.duration
                                     halfBlock2.constraints_value = block_constraint_results[bestblock_idx]
                                     self.schedule.insert_slot(halfBlock2.start_time, halfBlock2)
-                                    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Observed ", halfBlock.target.name)
                                     lastBlock = halfBlock2
                                 else:
                                     blocks.pop(bestblock_idx)
@@ -1024,7 +1021,6 @@ class SequentialScheduler(Scheduler):
                             newb.end_time = current_time
                             newb.constraints_value = block_constraint_results[bestblock_idx]
                             self.schedule.insert_slot(newb.start_time, newb)
-                            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Observed ", newb.target.name)
                             lastBlock = newb
                     else:
                         index, shortest_time = self.get_shortest_observation(current_time, blocks)
@@ -1039,7 +1035,6 @@ class SequentialScheduler(Scheduler):
                             newb.end_time = current_time
                             newb.constraints_value = block_constraint_results[bestblock_idx]
                             self.schedule.insert_slot(newb.start_time, newb)
-                            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Observed ", newb.target.name)
                             lastBlock = newb
                         else:
                             break

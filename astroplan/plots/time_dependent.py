@@ -494,15 +494,29 @@ def plot_schedule_altitude(schedule, show_night=False, fig=None):
 
     ts = (schedule.start_time +
           np.linspace(0, (schedule.end_time - schedule.start_time).value, 100) * u.day)
-    targ_to_color = {}
-    color_idx = np.linspace(0, 1, len(targets))
-    # lighter, bluer colors indicate higher priority
-    for target, ci in zip(set(targets), color_idx):
-        if "split" not in target.name:
-            plot_altitude(target, schedule.observer, ts, ax,fig=fig, style_kwargs=dict(color=plt.cm.jet(ci)))
-            targ_to_color[target.name] = plt.cm.jet(ci)
-    for target in targetsCalibration:
-        plot_altitude(target, schedule.observer, ts, ax, fig=fig, style_kwargs=dict(color="red", linestyle=":"))
+    if schedule.targColor != None:
+        targ_to_color = schedule.targColor
+        for target in targets:
+            if "split" not in target.name:
+                plot_altitude(target, schedule.observer, ts, ax, fig=fig,
+                              style_kwargs=dict(color=targ_to_color[target.name]))
+    else:
+        targ_to_color = {}
+        color_idx = np.linspace(0, 1, len(targets))
+        # lighter, bluer colors indicate higher
+        for target, ci in zip(set(targets), color_idx):
+            if "split" not in target.name:
+                if target.name not in targ_to_color:
+                    targ_to_color[target.name] = plt.cm.jet(ci)
+                plot_altitude(target, schedule.observer, ts, ax,fig=fig, style_kwargs=dict(color=targ_to_color[target.name]))
+
+    if schedule.calibColor != None:
+        calib_to_color = schedule.calibColor
+        for target in targetsCalibration:
+            plot_altitude(target, schedule.observer, ts, ax, fig=fig, style_kwargs=dict(color=calib_to_color[target.name], linestyle=":"))
+    else:
+        for target in targetsCalibration:
+            plot_altitude(target, schedule.observer, ts, ax, fig=fig, style_kwargs=dict(color="red", linestyle=":"))
     if show_night:
         # I'm pretty sure this overlaps a lot, creating darker bands
         for test_time in ts:
@@ -521,12 +535,15 @@ def plot_schedule_altitude(schedule, show_night=False, fig=None):
                         facecolor='lightgrey', alpha=0.05)
             plt.axvspan(previous_twilight.plot_date, next_twilight.plot_date,
                         facecolor='lightgrey', alpha=0.05)
-
     for block in blocks:
         if hasattr(block, 'target'):
             if(block.calibration):
-                ax.axvspan(block.start_time.plot_date, block.end_time.plot_date,
-                            lw=0, alpha=.75, color="red")
+                if schedule.calibColor != None:
+                    ax.axvspan(block.start_time.plot_date, block.end_time.plot_date,
+                               lw=0, alpha=.75, color=calib_to_color[block.target.name])
+                else:
+                    ax.axvspan(block.start_time.plot_date, block.end_time.plot_date,
+                                lw=0, alpha=.75, color="red")
                 ax.text(block.start_time.plot_date,10, block.target.name, rotation=90)
             else:
                 if "split" in block.target.name:

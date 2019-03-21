@@ -266,12 +266,19 @@ def plot_schedule_sky(schedule, fig=None):
     targetsCalibration = np.array(targetsCalibration)
     color_idx = np.linspace(0, 1, len(targets))
     color_idx2 = np.linspace(0, 1, len(targetsCalibration))
-    colorDict = {}
-    for target, ci in zip(targets[:,0],color_idx):
-        colorDict[target.name] = ci
+    if schedule.targColor != None:
+        targColorDict = schedule.targColor
+    else:
+        targColorDict = {}
+        for target, ci in zip(targets[:,0],color_idx):
+            targColorDict[target.name] = plt.cm.jet(ci)
+    if schedule.calibColor != None:
+        calibColorDict = schedule.calibColor
+    else:
+        calibColorDict = {}
+        for target, ci in zip(targetsCalibration[:,0],color_idx2):
+            calibColorDict[target.name] = plt.cm.brg(ci)
 
-    for target, ci in zip(targetsCalibration[:,0],color_idx2):
-        colorDict[target.name] = ci
     for target, start_time, end_time, observation_nr, ci in zip(targets[:,0], targets[:,1], targets[:,2],
                                                                 targets[:,3], color_idx):
         if "split" in target.name:
@@ -279,7 +286,7 @@ def plot_schedule_sky(schedule, fig=None):
         delta_t = end_time - start_time
         number_of_dots = (delta_t.sec / 60) / 1
         observe_time = start_time + delta_t * np.linspace(0, 1, number_of_dots)
-        ax = plot_sky(target, schedule.observer, observe_time, fig=fig, style_kwargs=dict(color=plt.cm.jet(colorDict[target.name])),
+        ax = plot_sky(target, schedule.observer, observe_time, fig=fig, style_kwargs=dict(color=targColorDict[target.name]),
                  annotation=observation_nr)
 
     for target, start_time, end_time, observation_nr, ci in zip(targetsCalibration[:,0], targetsCalibration[:,1], targetsCalibration[:,2],
@@ -287,7 +294,7 @@ def plot_schedule_sky(schedule, fig=None):
         delta_t = end_time - start_time
         number_of_dots = (delta_t.sec / 60) / 1
         observe_time = start_time + delta_t * np.linspace(0, 1, number_of_dots)
-        ax = plot_sky(target, schedule.observer, observe_time, fig=fig, style_kwargs=dict(color=plt.cm.brg(colorDict[target.name]), marker='x'),
+        ax = plot_sky(target, schedule.observer, observe_time, fig=fig, style_kwargs=dict(color=calibColorDict[target.name], marker='x'),
                  annotation=observation_nr)
 
     return ax

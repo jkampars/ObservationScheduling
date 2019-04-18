@@ -16,6 +16,7 @@ import warnings
 from astropy.time import Time
 import astropy.units as u
 from astropy.coordinates import get_body, get_sun, get_moon, SkyCoord
+from astropy.coordinates import Latitude
 from astropy import table
 
 import numpy as np
@@ -341,9 +342,11 @@ class AltitudeConstraint(Constraint):
     def compute_constraint(self, times, observer, targets):
         cached_altaz = _get_altaz(times, observer, targets)
         alt = cached_altaz['altaz'].alt
+        min = Latitude(self.min.scale, self.min.bases[0])
+        max = Latitude(self.max.scale, self.min.bases[0])
         if self.boolean_constraint:
-            lowermask = self.min <= alt
-            uppermask = alt <= self.max
+            lowermask = min <= alt
+            uppermask = alt <= max
             return lowermask & uppermask
         else:
             return max_best_rescale(alt, self.min, self.max)

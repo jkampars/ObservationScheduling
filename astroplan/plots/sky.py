@@ -138,7 +138,6 @@ def plot_sky(target, observer, time, ax=None, style_kwargs=None,
     altitude = (91 * u.deg - observer.altaz(time, target).alt) * (1/u.deg)
     # Azimuth MUST be given to plot() in radians.
     azimuth = observer.altaz(time, target).az * (1/u.deg) * (np.pi/180.0)
-
     # Some checks & info for labels.
     if not hasattr(target, 'name'):
         target_name = ''
@@ -163,7 +162,6 @@ def plot_sky(target, observer, time, ax=None, style_kwargs=None,
     alt_plot = altitude[altitude <= 91.0]
     if az_plot is None:
         az_plot = []
-
     # More axes set-up.
     # Position of azimuth = 0 (data, not label).
     ax.set_theta_zero_location('N')
@@ -174,11 +172,16 @@ def plot_sky(target, observer, time, ax=None, style_kwargs=None,
 
     # Plot target coordinates.
     ax.scatter(az_plot, alt_plot, **style_kwargs)
-
-
     if annotation is not None:
-        ax.annotate(str(annotation), xy=[az_plot[0].value, alt_plot[0].value])
-
+        if type(az_plot[0]) == u.quantity.Quantity:
+            az = az_plot[0].value
+        else:
+            az = az_plot[0]
+        if type(alt_plot[0]) == u.quantity.Quantity:
+            alt = alt_plot[0].value
+        else:
+            alt = alt_plot[0]
+        ax.annotate(str(annotation), xy=[az, alt])
     # Set radial limits.
     ax.set_rlim(1, 91)
 
@@ -222,14 +225,12 @@ def plot_sky(target, observer, time, ax=None, style_kwargs=None,
     # Set ticks and labels.
     ax.set_rgrids(range(1, 106, 15), r_labels, angle=-45)
     ax.set_thetagrids(range(0, 360, 45), theta_labels)
-
     # Below commands don't seem to work for setting ticks/labels.
     # ax.rgrids(range(1, 91, 15), r_labels, angle=-45)
     # ax.thetagrids(range(0, 360, 45), theta_labels)
 
     # Redraw the figure for interactive sessions.
     ax.figure.canvas.draw()
-
     return ax
 
 def plot_schedule_sky(schedule, fig=None):
@@ -279,6 +280,7 @@ def plot_schedule_sky(schedule, fig=None):
         for target, ci in zip(targetsCalibration[:,0],color_idx2):
             calibColorDict[target.name] = plt.cm.brg(ci)
 
+
     for target, start_time, end_time, observation_nr, ci in zip(targets[:,0], targets[:,1], targets[:,2],
                                                                 targets[:,3], color_idx):
         if "split" in target.name:
@@ -286,16 +288,16 @@ def plot_schedule_sky(schedule, fig=None):
         delta_t = end_time - start_time
         number_of_dots = (delta_t.sec / 60) / 1
         observe_time = start_time + delta_t * np.linspace(0, 1, number_of_dots)
-        ax = plot_sky(target, schedule.observer, observe_time, fig=fig, style_kwargs=dict(color=targColorDict[target.name]),
-                 annotation=observation_nr)
 
+
+
+        ax = plot_sky(target, schedule.observer, observe_time, fig=fig, style_kwargs=dict(color=targColorDict[target.name]), annotation=observation_nr)
     for target, start_time, end_time, observation_nr, ci in zip(targetsCalibration[:,0], targetsCalibration[:,1], targetsCalibration[:,2],
                                                                 targetsCalibration[:,3], color_idx2):
         delta_t = end_time - start_time
         number_of_dots = (delta_t.sec / 60) / 1
         observe_time = start_time + delta_t * np.linspace(0, 1, number_of_dots)
-        ax = plot_sky(target, schedule.observer, observe_time, fig=fig, style_kwargs=dict(color=calibColorDict[target.name], marker='x'),
-                 annotation=observation_nr)
+        ax = plot_sky(target, schedule.observer, observe_time, fig=fig, style_kwargs=dict(color=calibColorDict[target.name], marker='x'), annotation=observation_nr)
 
     return ax
     # TODO: make this output a `axes` object

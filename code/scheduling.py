@@ -28,10 +28,9 @@ from plot_qt5 import Plot
 import re
 import os
 import json
+import configparser
 import datetime
 import csv
-import pickle
-import io
 
 
 def main():
@@ -143,6 +142,11 @@ class GUI(QWidget):
             item.setCheckState(Qt.Unchecked)
             self.dateList.addItem(item)
 
+        config = configparser.ConfigParser()
+        config.read('config/config.ini')
+        self.config = config._sections['Default']
+        #print(config['Default']['obsSplitLength'])
+
         self.layout = QGridLayout()
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0,0,0,0)
@@ -166,7 +170,6 @@ class GUI(QWidget):
 
         for index in range(self.observationList.count()):
             item = self.observationList.item(index)
-            print(item.data(Qt.UserRole))
 
         targetLayout = QFormLayout()
         targetBox = QGroupBox()
@@ -227,6 +230,9 @@ class GUI(QWidget):
         targetsButton = QPushButton("Targets")
         targetsButton.clicked.connect(self.edit_targets)
         self.layout.addWidget(targetsButton, 2, 3)
+        settingsButton = QPushButton("Settings")
+        settingsButton.clicked.connect(self.load_settings)
+        self.layout.addWidget(settingsButton, 3, 3)
 
     def obsChanged(self):
         if len(self.observationList.selectedItems()) > 0:
@@ -345,6 +351,63 @@ class GUI(QWidget):
                 self.targetsDict[targetName]["ra"] = Angle(ra)
                 self.targetsDict[targetName]["dec"] = Angle(dec)
 
+    def load_settings(self):
+        self.clear_window()
+        targetLayout = QFormLayout()
+        targetBox = QGroupBox()
+        targetBox.setMaximumSize(350, 250)
+
+        calibLabel = QLabel("Calib every X min:")
+        self.calibBox = QLineEdit()
+        calibLabel.setParent(targetBox)
+        self.calibBox.setParent(targetBox)
+        self.calibBox.setText(self.config['maxtimewithoutcalibration'])
+        targetLayout.addRow(calibLabel, self.calibBox)
+
+        calibDurLabel = QLabel("Calib duration:")
+        self.calibDurBox = QLineEdit()
+        calibDurLabel.setParent(targetBox)
+        self.calibDurBox.setParent(targetBox)
+        self.calibDurBox.setText(self.config['calibrationlength'])
+        targetLayout.addRow(calibDurLabel, self.calibDurBox)
+
+        minAltLabel = QLabel("Min alt:")
+        self.minAltBox = QLineEdit()
+        minAltLabel.setParent(targetBox)
+        self.minAltBox.setParent(targetBox)
+        self.minAltBox.setText(self.config['minaltitude'])
+        targetLayout.addRow(minAltLabel, self.minAltBox)
+
+        maxAltLabel = QLabel("Max alt:")
+        self.maxAltBox = QLineEdit()
+        maxAltLabel.setParent(targetBox)
+        self.maxAltBox.setParent(targetBox)
+        self.maxAltBox.setText(self.config['maxaltitude'])
+        targetLayout.addRow(maxAltLabel, self.maxAltBox)
+
+        saveButton = QPushButton("Save settings")
+        saveButton.clicked.connect(self.save_settings)
+        targetLayout.addRow(saveButton)
+
+        targetBox.setLayout(targetLayout)
+        self.layout.addWidget(targetBox, 0, 2, 2, 1)
+
+    def save_settings(self):
+        if not (self.calibBox.text().isdigit() and int(self.calibBox.text()) > 0):
+            self.show_error("Input error","Max time without calib must be positive number")
+        elif not (self.calibDurBox.text().isdigit() and int(self.calibDurBox.text()) > 0):
+            self.show_error("Input error","Calib duration must be positive number")
+        elif not (self.minAltBox.text().isdigit() and int(self.minAltBox.text()) > 0):
+            self.show_error("Input error","Min alt must be positive number")
+        elif not (self.maxAltBox.text().isdigit() and int(self.maxAltBox.text()) > 0):
+            self.show_error("Input error","Max alt must be positive number")
+        else:
+            self.config['maxtimewithoutcalibration'] = self.calibBox.text()
+            self.config['calibrationlength'] = self.calibDurBox.text()
+            self.config['minaltitude'] = self.minAltBox.text()
+            self.config['maxaltitude'] = self.maxAltBox.text()
+            self.to_start()
+
     def prepare_schedule(self):
         hasDate = False
         for index in range(self.dateList.count()):
@@ -393,17 +456,17 @@ class GUI(QWidget):
             dayStart = Time(day[0])  # convert from datetime to astropy.time
             dayEnd = Time(day[1])
 
-            min_Altitude = 20
-            max_Altitude = 85
-            constraints = [AltitudeConstraint(min_Altitude * u.deg, max_Altitude * u.deg)]
+            constraints = [AltitudeConstraint(self.config['minaltitude'] * u.deg, self.config['maxaltitude'] * u.deg)]
 
             read_out = 1 * u.second
             target_exp = 60 * u.second
             blocks = []
 
             for target in self.targets:
-                if (not is_always_observable(constraints, self.irbene, target.target, times=[dayStart, dayEnd])):
-                    print(target.name, " is not observable")
+                #print(is_always_observable(constraints, self.irbene, target.target, time_range=[dayStart, dayEnd]))
+                #input()
+                #if not (is_always_observable(constraints, self.irbene, target.target, times=[dayStart, dayEnd])):
+                #    print(target.name, " is not observable")
                 n = target.scans_per_obs
                 priority = target.priority
                 if (target.obs_per_week != 0):
@@ -412,17 +475,15 @@ class GUI(QWidget):
 
             slew_rate = 2 * u.deg / u.second
             transitioner = Transitioner(slew_rate, {'filter': {'default': 5 * u.second}})
-            print("Starting scheduler")
             prior_scheduler = SequentialScheduler(constraints=constraints, observer=self.irbene, transitioner=transitioner,
-                                                  calibrators=self.calibrators, firstSchedule=True)
-
+                                                  calibrators=self.calibrators, firstSchedule=True, config=self.config)
             priority_schedule = Schedule(dayStart, dayEnd, targColor=targ_to_color, calibColor=calib_to_color)
             prior_scheduler(blocks, priority_schedule)
 
             observations = []
             for block in priority_schedule.scheduled_blocks:
                 if hasattr(block, 'target'):
-                    print(block.target.name)
+                    print(block)
                     observation = Observation(block.target.name, block.start_time.datetime,
                                               (block.start_time + block.duration).datetime)
                     observations.append(observation)

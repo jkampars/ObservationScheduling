@@ -895,16 +895,19 @@ class GUI(QWidget):
             self.showAlt = False
             self.showBoth = False
             self.show_schedule()
+            self.radioSky.setChecked(True)
         elif "alt" in radioText:
             self.showSky = False
             self.showAlt = True
             self.showBoth = False
             self.show_schedule()
+            self.radioAlt.setChecked(True)
         elif "both" in radioText:
             self.showSky = False
             self.showAlt = False
             self.showBoth = True
             self.show_schedule()
+            self.radioBoth.setChecked(True)
 
     def back_schedule(self):
         self.plots_idx -= 1

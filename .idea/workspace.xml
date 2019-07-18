@@ -2,15 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5c500a79-5d2d-4172-ac6d-461f966a5a17" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/astroplan/plots/sky.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplan/plots/sky.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/astroplan/plots/time_dependent.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplan/plots/time_dependent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/astroplan/scheduling.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplan/scheduling.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/cfgtocsv.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/cfgtocsv.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/plannedObs.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/plannedObs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/plot_qt5.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/plot_qt5.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/scheduling.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/scheduling.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/config.ini" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.ini" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -23,8 +15,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/code/scheduling.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-960">
-              <caret line="59" column="37" lean-forward="true" selection-start-line="59" selection-start-column="37" selection-end-line="59" selection-end-column="37" />
+            <state relative-caret-position="655">
+              <caret line="909" column="42" selection-start-line="909" selection-start-column="42" selection-end-line="909" selection-end-column="42" />
               <folding>
                 <element signature="e#24#55#0" expanded="true" />
               </folding>
@@ -437,8 +429,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/code/scheduling.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-960">
-          <caret line="59" column="37" lean-forward="true" selection-start-line="59" selection-start-column="37" selection-end-line="59" selection-end-column="37" />
+        <state relative-caret-position="655">
+          <caret line="909" column="42" selection-start-line="909" selection-start-column="42" selection-end-line="909" selection-end-column="42" />
           <folding>
             <element signature="e#24#55#0" expanded="true" />
           </folding>

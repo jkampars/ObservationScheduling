@@ -485,6 +485,7 @@ def plot_schedule_altitude(schedule, show_night=False, fig=None):
     blocks = schedule.scheduled_blocks
     targets = []
     targetsCalibration = []
+
     for block in blocks:
         if isinstance(block, ObservingBlock):
             if block.calibration:
@@ -558,6 +559,23 @@ def plot_schedule_altitude(schedule, show_night=False, fig=None):
             ax.axvspan(block.start_time.plot_date, block.end_time.plot_date,
                         color='k')
     ax.axhline(3, color='k', label='Transitions')
+
+    minalt = int(schedule.minalt)
+    maxalt = int(schedule.maxalt)
+
+    #minalt = 10
+    #maxalt = 85
+
+    print(minalt)
+    print(maxalt)
+
+    ax.axhline(minalt, color="red")
+    ax.axhline(maxalt, color="red")
+
+    min, max = ax.get_ylim()
+    print(min, max)
+    print(type(min), type(max))
+
     return ax
     # TODO: make this output a `axes` object
 

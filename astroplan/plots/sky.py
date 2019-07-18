@@ -264,42 +264,47 @@ def plot_schedule_sky(schedule, fig=None):
                 observation_nr = observation_nr + 1
 
     targets = np.array(targets)
-    targetsCalibration = np.array(targetsCalibration)
     color_idx = np.linspace(0, 1, len(targets))
-    color_idx2 = np.linspace(0, 1, len(targetsCalibration))
     if schedule.targColor != None:
         targColorDict = schedule.targColor
     else:
         targColorDict = {}
         for target, ci in zip(targets[:,0],color_idx):
             targColorDict[target.name] = plt.cm.jet(ci)
-    if schedule.calibColor != None:
-        calibColorDict = schedule.calibColor
+
+    targetsCalibration = np.array(targetsCalibration)
+    if len(targetsCalibration) != 0:
+        color_idx2 = np.linspace(0, 1, len(targetsCalibration))
+        if schedule.calibColor != None:
+            calibColorDict = schedule.calibColor
+        else:
+            calibColorDict = {}
+            for target, ci in zip(targetsCalibration[:,0],color_idx2):
+                calibColorDict[target.name] = plt.cm.brg(ci)
+
+
+    if len(targets) > 0:
+        for target, start_time, end_time, observation_nr, ci in zip(targets[:,0], targets[:,1], targets[:,2],
+                                                                    targets[:,3], color_idx):
+            if "split" in target.name:
+                target.name = str.replace(target.name, " split", "")
+            delta_t = end_time - start_time
+            number_of_dots = (delta_t.sec / 60) / 1
+            observe_time = start_time + delta_t * np.linspace(0, 1, number_of_dots)
+            ax = plot_sky(target, schedule.observer, observe_time, fig=fig, style_kwargs=dict(color=targColorDict[target.name]), annotation=observation_nr)
+
+    if len(targetsCalibration) > 0:
+        for target, start_time, end_time, observation_nr, ci in zip(targetsCalibration[:,0], targetsCalibration[:,1], targetsCalibration[:,2],
+                                                                    targetsCalibration[:,3], color_idx2):
+            delta_t = end_time - start_time
+            number_of_dots = (delta_t.sec / 60) / 1
+            observe_time = start_time + delta_t * np.linspace(0, 1, number_of_dots)
+            ax = plot_sky(target, schedule.observer, observe_time, fig=fig, style_kwargs=dict(color=calibColorDict[target.name], marker='x'), annotation=observation_nr)
+
+    if  'ax' in locals():
+        return ax
     else:
-        calibColorDict = {}
-        for target, ci in zip(targetsCalibration[:,0],color_idx2):
-            calibColorDict[target.name] = plt.cm.brg(ci)
-
-
-    for target, start_time, end_time, observation_nr, ci in zip(targets[:,0], targets[:,1], targets[:,2],
-                                                                targets[:,3], color_idx):
-        if "split" in target.name:
-            target.name = str.replace(target.name, " split", "")
-        delta_t = end_time - start_time
-        number_of_dots = (delta_t.sec / 60) / 1
-        observe_time = start_time + delta_t * np.linspace(0, 1, number_of_dots)
-
-
-
-        ax = plot_sky(target, schedule.observer, observe_time, fig=fig, style_kwargs=dict(color=targColorDict[target.name]), annotation=observation_nr)
-    for target, start_time, end_time, observation_nr, ci in zip(targetsCalibration[:,0], targetsCalibration[:,1], targetsCalibration[:,2],
-                                                                targetsCalibration[:,3], color_idx2):
-        delta_t = end_time - start_time
-        number_of_dots = (delta_t.sec / 60) / 1
-        observe_time = start_time + delta_t * np.linspace(0, 1, number_of_dots)
-        ax = plot_sky(target, schedule.observer, observe_time, fig=fig, style_kwargs=dict(color=calibColorDict[target.name], marker='x'), annotation=observation_nr)
-
-    return ax
+        return False
     # TODO: make this output a `axes` object
 
 

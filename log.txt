@@ -1,0 +1,5 @@
+Fatal Python error: Segmentation fault
+
+Current thread 0x00007f684166c080 (most recent call first):
+  File "code/scheduling.py", line 43 in main
+  File "code/scheduling.py", line 719 in <module>

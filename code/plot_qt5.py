@@ -22,16 +22,18 @@ class Plot(FigureCanvas):
         self.fig.add_subplot(ax)
 
     def plot_sky_schedule(self, schedule):
-        plot_schedule_sky(schedule, fig=self.fig)
-        handles, labels = self.fig.axes[0].get_legend_handles_labels()
-        handle_list, label_list = [], []
-        for handle, label in zip(handles, labels):
-            if label not in label_list and handle not in handle_list:
-                handle_list.append(handle)
-                label_list.append(label)
-        self.fig.axes[0].legend(handle_list, label_list, loc="center left", bbox_to_anchor=(1.15, 0.5))
-        self.fig.tight_layout()
-        self.draw()
+        if plot_schedule_sky(schedule, fig=self.fig):
+            handles, labels = self.fig.axes[0].get_legend_handles_labels()
+            handle_list, label_list = [], []
+            for handle, label in zip(handles, labels):
+                if label not in label_list and handle not in handle_list:
+                    handle_list.append(handle)
+                    label_list.append(label)
+            self.fig.axes[0].legend(handle_list, label_list, loc="center left", bbox_to_anchor=(1.15, 0.5))
+            self.fig.tight_layout()
+            self.draw()
+        else:
+            return False
 
     def plot_altitude_schedule(self, schedule):
         plot_schedule_altitude(schedule, fig=self.fig)

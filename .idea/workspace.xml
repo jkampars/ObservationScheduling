@@ -2,6 +2,40 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5c500a79-5d2d-4172-ac6d-461f966a5a17" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/_astropy_init.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/_astropy_init.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/conftest.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/conftest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/constraints.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/constraints.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/exceptions.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/exceptions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/moon.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/moon.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/observer.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/observer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/periodic.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/periodic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/plots/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/plots/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/plots/finder.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/plots/finder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/plots/mplstyles.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/plots/mplstyles.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/plots/sky.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/plots/sky.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/plots/tests/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/plots/tests/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/plots/tests/baseline_images/test_image_example.png" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/plots/tests/baseline_images/test_image_example.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/plots/tests/test_sky.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/plots/tests/test_sky.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/plots/time_dependent.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/plots/time_dependent.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/scheduling.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/scheduling.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/setup_package.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/setup_package.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/target.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/target.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/tests/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/tests/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/tests/coveragerc" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/tests/coveragerc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/tests/test_constraints.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/tests/test_constraints.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/tests/test_moon.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/tests/test_moon.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/tests/test_observer.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/tests/test_observer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/tests/test_periodic.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/tests/test_periodic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/tests/test_scheduling.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/tests/test_scheduling.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/tests/test_target.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/tests/test_target.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/tests/test_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/tests/test_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astroplan/version.py" beforeDir="false" afterPath="$PROJECT_DIR$/astroplanventa/version.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/googlecalendar.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/googlecalendar.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/plannedObs.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/plannedObs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/plot_qt5.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/plot_qt5.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/scheduling.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/scheduling.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -10,109 +44,6 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/code/scheduling.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="655">
-              <caret line="909" column="42" selection-start-line="909" selection-start-column="42" selection-end-line="909" selection-end-column="42" />
-              <folding>
-                <element signature="e#24#55#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/plannedObs.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="300">
-              <caret line="20" column="24" selection-start-line="20" selection-start-column="24" selection-end-line="20" selection-end-column="24" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/observation.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="15" selection-start-column="15" selection-end-column="15" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/plot_qt5.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="480">
-              <caret line="35" column="24" selection-start-line="35" selection-start-column="24" selection-end-line="35" selection-end-column="24" />
-              <folding>
-                <element signature="e#0#52#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/googlecalendar.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="345">
-              <caret line="35" column="22" selection-start-line="35" selection-start-column="22" selection-end-line="35" selection-end-column="22" />
-              <folding>
-                <element signature="e#311#348#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code/cfgtocsv.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="22" column="89" selection-start-line="22" selection-start-column="89" selection-end-line="22" selection-end-column="89" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/astroplan/plots/time_dependent.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
-              <caret line="548" column="17" selection-start-line="548" selection-start-column="17" selection-end-line="548" selection-end-column="17" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/astroplan/plots/sky.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="278">
-              <caret line="137" column="26" selection-start-line="137" selection-start-column="21" selection-end-line="137" selection-end-column="26" />
-              <folding>
-                <element signature="e#64#172#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/astroplan/scheduling.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="87">
-              <caret line="423" column="13" lean-forward="true" selection-start-line="423" selection-start-column="13" selection-end-line="423" selection-end-column="13" />
-              <folding>
-                <element signature="e#108#216#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
-  </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -120,124 +51,12 @@
       </list>
     </option>
   </component>
-  <component name="FindInProjectRecents">
-    <findStrings>
-      <find>deleteItemsOfLayout</find>
-      <find>self.targettimes</find>
-      <find>in self.date</find>
-      <find>self.datelist</find>
-      <find>self.dateboxList</find>
-      <find>datebox</find>
-      <find>times</find>
-      <find>datebox.additem</find>
-      <find>widget.currentData(Qt.UserRole)[0].strftime(&quot;%Y-%m-%d %H:%M&quot;)</find>
-      <find>regex</find>
-      <find>time</find>
-      <find>.times</find>
-      <find>targets</find>
-      <find>.time</find>
-      <find>timedict</find>
-      <find>preFilled</find>
-      <find>print</find>
-      <find>connect</find>
-      <find>.connect</find>
-      <find>self.timeBox</find>
-      <find>save_changes</find>
-      <find>target</find>
-      <find>config</find>
-      <find>plot_altitude</find>
-      <find>self.config</find>
-      <find>constraints</find>
-      <find>degree</find>
-      <find>angle</find>
-      <find>u.deg</find>
-      <find>calibratorList</find>
-    </findStrings>
-    <replaceStrings>
-      <replace>self.targets</replace>
-      <replace>self.week</replace>
-      <replace>self.calibrators</replace>
-      <replace>ra</replace>
-      <replace>dec</replace>
-      <replace>priority</replace>
-      <replace>obs</replace>
-      <replace>scan</replace>
-      <replace>self.saveButton</replace>
-      <replace>self.targetList</replace>
-      <replace>+</replace>
-      <replace>,</replace>
-      <replace>observations</replace>
-      <replace>max</replace>
-      <replace>self.calibLen</replace>
-      <replace>self.calibGap</replace>
-      <replace>splitLeft</replace>
-      <replace>self.targetLayout</replace>
-      <replace>calibrator</replace>
-    </replaceStrings>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="IdeDocumentHistory">
-    <option name="CHANGED_PATHS">
-      <list>
-        <option value="$PROJECT_DIR$/code/observation.py" />
-        <option value="$PROJECT_DIR$/quickstart.py" />
-        <option value="$PROJECT_DIR$/code/googlecalendar.py" />
-        <option value="$PROJECT_DIR$/astroplan/constraints.py" />
-        <option value="$PROJECT_DIR$/code/cfgtocsv.py" />
-        <option value="$PROJECT_DIR$/code/plannedObs.py" />
-        <option value="$PROJECT_DIR$/astroplan/plots/sky.py" />
-        <option value="$PROJECT_DIR$/code/plot_qt5.py" />
-        <option value="$PROJECT_DIR$/astroplan/scheduling.py" />
-        <option value="$PROJECT_DIR$/astroplan/plots/time_dependent.py" />
-        <option value="$PROJECT_DIR$/code/scheduling.py" />
-      </list>
-    </option>
-  </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="313" />
-    <option name="y" value="436" />
-    <option name="width" value="927" />
-    <option name="height" value="789" />
-  </component>
+  <component name="ProjectId" id="1QbSOgfFrnBmYLmISTb82hJSA9y" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="1" id="Add" />
-  </component>
-  <component name="ProjectView">
-    <navigator proportions="" version="1">
-      <foldersAlwaysOnTop value="true" />
-    </navigator>
-    <panes>
-      <pane id="Scope" />
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="ObservationScheduling" type="b2602c69:ProjectViewProjectNode" />
-              <item name="ObservationScheduling" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="ObservationScheduling" type="b2602c69:ProjectViewProjectNode" />
-              <item name="ObservationScheduling" type="462c0819:PsiDirectoryNode" />
-              <item name="astroplan" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="ObservationScheduling" type="b2602c69:ProjectViewProjectNode" />
-              <item name="ObservationScheduling" type="462c0819:PsiDirectoryNode" />
-              <item name="astroplan" type="462c0819:PsiDirectoryNode" />
-              <item name="plots" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="ObservationScheduling" type="b2602c69:ProjectViewProjectNode" />
-              <item name="ObservationScheduling" type="462c0819:PsiDirectoryNode" />
-              <item name="code" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-    </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
@@ -269,28 +88,18 @@
     </task>
     <servers />
   </component>
-  <component name="ToolWindowManager">
-    <frame x="67" y="27" width="1853" height="1053" extended-state="6" />
-    <editor active="true" />
-    <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.11092896" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.3293348" />
-      <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Terminal" order="8" />
-      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
-      <window_info anchor="bottom" id="Python Console" order="10" />
-      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-    </layout>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -302,140 +111,5 @@
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
-  </component>
-  <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/service.json" />
-    <entry file="file://$PROJECT_DIR$/quickstart.py" />
-    <entry file="file://$PROJECT_DIR$/code/calendar.py" />
-    <entry file="file://$PROJECT_DIR$/astroplan/observer.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/astroplan/target.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2655">
-          <caret line="186" selection-start-line="186" selection-end-line="186" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/astroplan/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="1" selection-start-line="1" selection-end-line="1" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/copy_library.sh">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/astroplan/plots/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="3" selection-start-column="3" selection-end-column="3" />
-          <folding>
-            <element signature="e#221#250#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/astroplan/constraints.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="280">
-          <caret line="339" column="52" selection-start-line="339" selection-start-column="52" selection-end-line="339" selection-end-column="52" />
-          <folding>
-            <element signature="e#156#264#0" expanded="true" />
-            <element signature="e#12#42#0" expanded="true" />
-            <element signature="e#12#42#0" expanded="true" />
-            <element signature="e#12#47#0" expanded="true" />
-            <element signature="e#8#58#0" expanded="true" />
-            <element signature="e#8#58#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/observation.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="15" selection-start-column="15" selection-end-column="15" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/plot_qt5.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="480">
-          <caret line="35" column="24" selection-start-line="35" selection-start-column="24" selection-end-line="35" selection-end-column="24" />
-          <folding>
-            <element signature="e#0#52#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/googlecalendar.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="35" column="22" selection-start-line="35" selection-start-column="22" selection-end-line="35" selection-end-column="22" />
-          <folding>
-            <element signature="e#311#348#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/cfgtocsv.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="22" column="89" selection-start-line="22" selection-start-column="89" selection-end-line="22" selection-end-column="89" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/astroplan/plots/time_dependent.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="548" column="17" selection-start-line="548" selection-start-column="17" selection-end-line="548" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/plannedObs.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="20" column="24" selection-start-line="20" selection-start-column="24" selection-end-line="20" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/astroplan/plots/sky.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="278">
-          <caret line="137" column="26" selection-start-line="137" selection-start-column="21" selection-end-line="137" selection-end-column="26" />
-          <folding>
-            <element signature="e#64#172#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/astroplan/scheduling.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="87">
-          <caret line="423" column="13" lean-forward="true" selection-start-line="423" selection-start-column="13" selection-end-line="423" selection-end-column="13" />
-          <folding>
-            <element signature="e#108#216#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code/scheduling.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="655">
-          <caret line="909" column="42" selection-start-line="909" selection-start-column="42" selection-end-line="909" selection-end-column="42" />
-          <folding>
-            <element signature="e#24#55#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
   </component>
 </project>

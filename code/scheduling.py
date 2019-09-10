@@ -7,14 +7,9 @@ from astropy.time import Time
 from astropy.utils import iers
 from urllib.request import urlopen
 from urllib.error import HTTPError, URLError
-from astroplan import Observer, FixedTarget, ObservingBlock
-from astroplan.constraints import AltitudeConstraint
-from astroplan.scheduling import Transitioner, Schedule, SequentialScheduler
-from astroplan.plots import  plot_schedule_altitude, plot_altitude, plot_schedule_sky, plot_sky
 from dateutil.parser import parse
-from astroplan import is_always_observable, download_IERS_A
 from collections import OrderedDict
-from PyQt5.QtWidgets import QApplication, QWidget, QFormLayout, QGridLayout, QGroupBox, QLineEdit, QLabel, QPushButton, QComboBox, QMessageBox, QListWidget, QListWidgetItem, QCheckBox, QVBoxLayout, QHBoxLayout, QRadioButton
+from PyQt5.QtWidgets import QApplication, QWidget, QFormLayout, QGridLayout, QGroupBox, QLineEdit, QFileDialog, QLabel, QPushButton, QComboBox, QMessageBox, QListWidget, QListWidgetItem, QCheckBox, QVBoxLayout, QHBoxLayout, QRadioButton
 from PyQt5.QtCore import Qt
 import numpy as np
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -33,6 +28,17 @@ import datetime
 import csv
 import faulthandler
 faulthandler.enable(all_threads=True)
+
+
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+from astroplanventa.constraints import AltitudeConstraint
+from astroplanventa import Observer, FixedTarget, ObservingBlock
+from astroplanventa.scheduling import Transitioner, Schedule, SequentialScheduler
+from astroplanventa.plots import  plot_schedule_altitude, plot_altitude, plot_schedule_sky, plot_sky
+from astroplanventa import is_always_observable, download_IERS_A
+
 
 
 def main():
@@ -143,6 +149,12 @@ class GUI(QWidget):
             dayEnd = parse(endArray[i])
             daySummary = summaryArray[i]
             daySummary = daySummary + " " + str(dayStart.date()) + " " + str(dayStart.time()) + "-" + str(dayEnd.time())
+            #print(dayStart)
+            #print(type(dayStart))
+            #dayStart = dayStart.isoformat()
+            #print(dayStart)
+            #print(type(dayStart))
+            #dayEnd = dayEnd.isoformat()
             item = QListWidgetItem(daySummary, self.dateList)
             item.setData(Qt.UserRole, [dayStart, dayEnd])
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
@@ -171,6 +183,8 @@ class GUI(QWidget):
         self.load_ui()
 
     def load_ui(self):
+        print(self.targets)
+        print(self.targetsDict)
         self.observationList = QListWidget()
         self.plannedTargets = []
         for target in self.targets[:10]:
@@ -227,6 +241,12 @@ class GUI(QWidget):
         line.addWidget(self.scanBox)
         self.targetLayout.addLayout(line)
 
+        line = QHBoxLayout()
+        globalLabel = QLabel("Global time:")
+        self.globalTimeBox = QLineEdit()
+        line.addWidget(globalLabel)
+        line.addWidget(self.globalTimeBox)
+        self.targetLayout.addLayout(line)
 
         line = QHBoxLayout()
         specificLabel = QLabel("Specific times:")
@@ -235,7 +255,6 @@ class GUI(QWidget):
         line.addWidget(specificLabel)
         line.addWidget(addTime)
         self.targetLayout.addLayout(line)
-
 
         saveButton = QPushButton("Save changes")
         saveButton.clicked.connect(self.save_obs_changes)
@@ -273,6 +292,12 @@ class GUI(QWidget):
         settingsButton = QPushButton("Settings")
         settingsButton.clicked.connect(self.load_settings)
         self.layout.addWidget(settingsButton, 4, 3)
+        saveObsButton = QPushButton("Save observation")
+        saveObsButton.clicked.connect(self.save_obs)
+        self.layout.addWidget(saveObsButton, 5, 3)
+        loadObsButton = QPushButton("Load observation")
+        loadObsButton.clicked.connect(self.load_obs)
+        self.layout.addWidget(loadObsButton, 6, 3)
 
     def add_time(self):
         datesChecked = 0
@@ -318,6 +343,8 @@ class GUI(QWidget):
         if len(self.observationList.selectedItems()) > 0:
             item = self.observationList.currentItem()
             plannedObs = item.data(Qt.UserRole)
+            print(plannedObs.times)
+            print(plannedObs.get_times())
             self.nameBox.setText(plannedObs.name)
             self.priorityBox.setText(str(plannedObs.priority))
             self.obsBox.setText(str(plannedObs.obs_per_week))
@@ -333,13 +360,16 @@ class GUI(QWidget):
                     maxi = self.targetLayout.count()
                     i = i -1
                 i=i+1
+            self.dateBoxList.clear()
             self.targetTimesCount = 0
             if plannedObs.times:
                 checkedDates = []
                 for index in range(self.dateList.count()):
                     if self.dateList.item(index).checkState() == Qt.Checked:
                         checkedDates.append(self.dateList.item(index).text())
+                print(checkedDates)
                 for time in list(plannedObs.times):
+                    print(time)
                     if time not in checkedDates:
                         self.show_error("Date mismatch", "Date "+time+" is not checked, removing it")
                         #plannedObs.times.remove(time)
@@ -396,14 +426,16 @@ class GUI(QWidget):
             self.observationList.currentItem().data(Qt.UserRole).priority = int(self.priorityBox.text())
             self.observationList.currentItem().data(Qt.UserRole).obs_per_week = int(self.obsBox.text())
             self.observationList.currentItem().data(Qt.UserRole).scans_per_obs = int(self.scanBox.text())
+            self.observationList.currentItem().data(Qt.UserRole).global_time = self.globalTimeBox.text()
             self.observationList.currentItem().setText(str(self.observationList.currentItem().data(Qt.UserRole)))
             times = {}
             for line in self.dateBoxList:
-                item = line.itemAt(0)
-                widget = item.widget()
-                date = widget.currentText()
+                if line.count() > 0:
+                    item = line.itemAt(0)
+                    widget = item.widget()
+                    date = widget.currentText()
 
-                times[date] = line.itemAt(1).widget().text()
+                    times[date] = line.itemAt(1).widget().text()
 
             self.observationList.currentItem().data(Qt.UserRole).times = times
 
@@ -735,16 +767,16 @@ class GUI(QWidget):
 
         for daySummary, day in week.items():
 
-
             dayStart = Time(day[0])  # convert from datetime to astropy.time
             dayEnd = Time(day[1])
 
             timeDict = {}
-            #timeDict[target.name] = target.time
 
             for target in self.targets:
                 if daySummary in target.times:
                     timeDict[target.name] = target.times[daySummary]
+                elif target.global_time != "":
+                    timeDict[target.name] = target.global_time
 
             minalt = self.config['minaltitude']
             maxalt = self.config['maxaltitude']
@@ -756,17 +788,11 @@ class GUI(QWidget):
             blocks = []
 
             for target in self.targets:
-                #if target.name == "g60p57":
-                    #print(target)
-                    #print(target.target)
                 n = target.scans_per_obs
                 priority = target.priority
                 if (target.obs_per_week != 0):
                     b = ObservingBlock.from_exposures(target.target, priority, target_exp, n, read_out)
                     blocks.append(b)
-            #for calibrator in self.calibrators:
-                #if calibrator.name == "3C48":
-
 
 
             slew_rate = 2 * u.deg / u.second
@@ -912,6 +938,83 @@ class GUI(QWidget):
     def back_schedule(self):
         self.plots_idx -= 1
         self.show_schedule()
+
+    def save_obs(self):
+        filename = self.saveFileDialog()
+        if filename != "Fail":
+            obsList = [self.observationList.item(i).data(Qt.UserRole) for i in range(self.observationList.count())]
+            json_dict = dict()
+            dict_array = []
+            for obs in obsList:
+                json_dict[obs.target.name]={
+                    #"target": obs.target.name,
+                    "priority": obs.priority,
+                    "obs_per_week": obs.obs_per_week,
+                    "scans_per_obs": obs.scans_per_obs,
+                    "global_time": obs.global_time,
+                    "times": obs.times,
+                }
+            #json_dict = dict_array
+            print(json_dict)
+            with open(filename, 'w') as outfile:
+                json.dump(json_dict, outfile, indent=4)
+
+
+    def saveFileDialog(self):
+        save = QFileDialog()
+        save.setDefaultSuffix(".json")
+        save.setNameFilter("JSON files (*.json)")
+        save.setAcceptMode(QFileDialog.AcceptSave)
+        save.setOption(QFileDialog.DontUseNativeDialog)
+        if save.exec_() == QFileDialog.Accepted:
+            return save.selectedFiles()[0]
+        else:
+            return "Fail"
+
+    def load_obs(self):
+        load = QFileDialog()
+        load.setDefaultSuffix(".json")
+        load.setNameFilter("JSON files (*.json)")
+        load.setAcceptMode(QFileDialog.AcceptOpen)
+        load.setOption(QFileDialog.DontUseNativeDialog)
+        if load.exec_() == QFileDialog.Accepted:
+            filename = load.selectedFiles()[0]
+            with open(filename) as json_file:
+                obs_dict = json.load(json_file)
+                self.observationList.clear()
+                for key in obs_dict:
+                    if key in self.targetsDict:
+                        targetName = key
+                        ra = self.targetsDict[targetName]["ra"]
+                        dec = self.targetsDict[targetName]["dec"]
+                        coord = SkyCoord(frame='icrs', ra=ra, dec=dec, obstime="J2000")
+                        target = FixedTarget(coord=coord, name=targetName)
+                        for date in obs_dict[key]['times']:
+                            print(date)
+
+
+
+                            #TODO Te pielikt date parbaudes, vai atkekset ja ir vai iznemt ja nav
+
+
+
+
+
+
+
+
+
+
+
+                        data = PlannedObs(target, int(obs_dict[key]['priority']), int(obs_dict[key]['obs_per_week']), int(obs_dict[key]['scans_per_obs']), obs_dict[key]['times'], obs_dict[key]['global_time'])
+                        item = QListWidgetItem(str(data), self.observationList)
+                        item.setData(Qt.UserRole, data)
+                        self.observationList.addItem(item)
+                        self.plannedTargets.append(target.name)
+                    else:
+                        self.show_error("Targett error", key+" not in targets, skipping it")
+        else:
+            print("Something went wrong")
 
     def show_error(self, title, error_message):
         error_dialog = QMessageBox.critical(self, title, error_message)

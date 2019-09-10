@@ -1004,37 +1004,38 @@ class SequentialScheduler(Scheduler):
                     obsTime = current_time.to_datetime()
                     obsTime = obsTime.replace(hour = int(hour)-1, minute=int(min))
                     obsTime = Time(obsTime)
+                    newb = None
                     for block in blocks:
                         if block.target.name == key:
                             newb = block
                             break
+                    if newb:
+                        newb.start_time = obsTime
 
-                    newb.start_time = obsTime
-
-                    newb.end_time = obsTime + newb.duration
-                    if self.fits_constraints(newb, newb.start_time):
-                        preFilledOK = True
-                        for preFilledStart, preFilledEnd in preFilled:
-                            if newb.start_time < preFilledStart and newb.start_time + newb.duration > preFilledStart:
-                                preFilledOK = False
-                            if newb.start_time > preFilledStart and newb.start_time < preFilledEnd:
-                                preFilledOK = False
-                        if preFilledOK:
-                            print("before insert")
-                            print(newb.start_time)
-                            print(self.schedule.start_time)
-                            print(self.schedule.end_time)
-                            self.schedule.insert_slot(newb.start_time, newb)
-                            print(newb.target.name, " observed")
-                            preFilled.append([newb.start_time, newb.end_time])
-                            print(newb)
-                            print(newb.start_time)
-                            print(newb.end_time)
-                            blocks.remove(newb)
+                        newb.end_time = obsTime + newb.duration
+                        if self.fits_constraints(newb, newb.start_time):
+                            preFilledOK = True
+                            for preFilledStart, preFilledEnd in preFilled:
+                                if newb.start_time < preFilledStart and newb.start_time + newb.duration > preFilledStart:
+                                    preFilledOK = False
+                                if newb.start_time > preFilledStart and newb.start_time < preFilledEnd:
+                                    preFilledOK = False
+                            if preFilledOK:
+                                print("before insert")
+                                print(newb.start_time)
+                                print(self.schedule.start_time)
+                                print(self.schedule.end_time)
+                                self.schedule.insert_slot(newb.start_time, newb)
+                                print(newb.target.name, " observed")
+                                preFilled.append([newb.start_time, newb.end_time])
+                                print(newb)
+                                print(newb.start_time)
+                                print(newb.end_time)
+                                blocks.remove(newb)
+                            else:
+                                print(key," specified time overlaps with other times")
                         else:
-                            print(key," specified time overlaps with other times")
-                    else:
-                        print(key, " specified time doesn't meet constraints")
+                            print(key, " specified time doesn't meet constraints")
 
             while (len(blocks) > 0) and (current_time < self.schedule.end_time):
                 print(current_time," ", self.schedule.end_time)

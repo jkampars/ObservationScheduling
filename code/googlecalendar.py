@@ -17,6 +17,8 @@ from oauth2client.file import Storage
 from google.oauth2 import service_account
 
 import datetime
+from dateutil.parser import parse
+
 
 try:
     import argparse
@@ -51,6 +53,7 @@ def get_all_events():
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         end = event['end'].get('dateTime', event['end'].get('date'))
+
         startArray.append(start)
         endArray.append(end)
         summaryArray.append(event['summary'])

@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QSizePolicy, QVBoxLayout
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from astroplan.plots import  plot_schedule_altitude, plot_schedule_sky
+from astroplanventa.plots import  plot_schedule_altitude, plot_schedule_sky
 
 
 class Plot(FigureCanvas):

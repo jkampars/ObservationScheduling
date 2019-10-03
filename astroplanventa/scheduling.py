@@ -1,8 +1,9 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 """
-Tools for scheduling observations.
-"""
 
+Labotas astroplan funkcijas, galvenokart SequentialScheduler
+
+"""
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
@@ -613,13 +614,13 @@ class SequentialScheduler(Scheduler):
         self.timeDict = timeDict
         super(SequentialScheduler, self).__init__(*args, **kwargs)
 
-    def load_config(self):
+    def load_config(self): #Ielade config iestatijumus
         self.calibGap = int(self.config['maxtimewithoutcalibration'])
         self.calibLen = int(self.config['calibrationlength'])
         self.minAlt = int(self.config['minaltitude'])
         self.maxAlt = int(self.config['maxaltitude'])
 
-    def fits_constraints(self, block, start_time, last_block = None):
+    def fits_constraints(self, block, start_time, last_block = None): #Paligfunkcija, kas parbauda vai konkrets block atbilst constraints
         for constraint in self.constraints:
             if last_block is not None:
                 trans = self.transitioner(last_block, block, start_time, self.observer)
@@ -635,7 +636,7 @@ class SequentialScheduler(Scheduler):
                 return False
         return True
 
-    def get_closest_calibrator(self, next_block, current_time, last_block=None):
+    def get_closest_calibrator(self, next_block, current_time, last_block=None): #Paligfunkcija, kas no target atrod tuvako calibrator
         angles = []
         for calibrator in self.calibrators:
             angles.append([next_block.target.coord.separation(calibrator.coord), calibrator])
@@ -665,7 +666,7 @@ class SequentialScheduler(Scheduler):
         print("No calibrator fits, returning None")
         return None
 
-    def get_shortest_observation(self, current_time, blocks):
+    def get_shortest_observation(self, current_time, blocks): #Paligfunkcija, kas atgriez visisako obs
         print("Scheduled block by priority doesn't fit, checking if others do")
         time_left = self.schedule.end_time - current_time
         total_times = []
@@ -728,7 +729,7 @@ class SequentialScheduler(Scheduler):
 
     def _make_schedule(self, blocks):
         self.firstSchedule = True
-        if not self.calibrators:
+        if not self.calibrators: #Ja nav jaievieto calibrators
             pre_filled = np.array([[block.start_time, block.end_time] for
                                    block in self.schedule.scheduled_blocks])
             if len(pre_filled) == 0:
@@ -762,7 +763,7 @@ class SequentialScheduler(Scheduler):
             current_time = self.schedule.start_time
 
             preFilled = []
-            if self.timeDict is not None:
+            if self.timeDict is not None: #Ja ir doti specifiski laiki, tad tos ievieto pirmos
 
                 for key, value in self.timeDict.items():
                     print(key, value)
@@ -803,7 +804,7 @@ class SequentialScheduler(Scheduler):
 
 
 
-            while (len(blocks) > 0) and (current_time < self.schedule.end_time):
+            while (len(blocks) > 0) and (current_time < self.schedule.end_time): #Veic planosanu lidz ir ieplanoti visi noverojumi vai beidzies laiks
                 print(current_time," ", self.schedule.end_time)
                 # first compute the value of all the constraints for each block
                 # given the current starting time
@@ -842,12 +843,12 @@ class SequentialScheduler(Scheduler):
                     current_time += self.gap_time
                 else:
                     newb = blocks[bestblock_idx]
-
+                    print(newb)
                     blocksTemp = blocks.copy()
                     bestblock_indexes = block_constraint_results.copy()
 
 
-                    if (current_time + newb.duration < self.schedule.end_time):
+                    if (current_time + newb.duration < self.schedule.end_time): #Ja vel ir atlicis laiks prieks noverojuma tad veic parbaudes un to ievieto
                         while(True):
                             preFilledOK = True
                             for preFilledStart, preFilledEnd, key in preFilled:
@@ -856,13 +857,14 @@ class SequentialScheduler(Scheduler):
                                 if current_time > preFilledStart and current_time < preFilledEnd:
                                     preFilledOK = False
                             if preFilledOK:
-                                trans = self.transitioner(self.schedule.observing_blocks[-1], newb,
-                                                          current_time,
-                                                          self.observer)
+                                if len(self.schedule.observing_blocks)>0:
+                                    trans = self.transitioner(self.schedule.observing_blocks[-1], newb,
+                                                              current_time,
+                                                              self.observer)
                                 if trans is not None:
                                     current_time += trans.duration
-                                if self.fits_constraints(newb, current_time):
                                     self.schedule.insert_slot(trans.start_time, trans)
+                                if self.fits_constraints(newb, current_time):
                                     blocks.pop(bestblock_idx)
                                     newb.start_time = current_time
                                     current_time += newb.duration
@@ -896,10 +898,10 @@ class SequentialScheduler(Scheduler):
                                 else:
                                     current_time += self.gap_time
                                     break
-                    else:
+
+                    else: #Ja prieks noverojuma nepietiek laiks, tad atlikuso laiku aizpilda ar mazakiem noverojumiem
                         print(current_time, self.schedule.end_time)
                         if preFilled:
-                            print("PREFIILED NOT EMPTYYYYYYYYYYYY")
                             npPreFilled = np.array(preFilled)
                             if self.schedule.end_time not in npPreFilled[:,1]:
                                 index, shortest_time = self.get_shortest_observation(current_time, blocks)
@@ -929,7 +931,6 @@ class SequentialScheduler(Scheduler):
                                     else:
                                         current_time += self.gap_time
                                 else:
-                                    print("Breaking here13")
                                     break
                             else:
                                 print("Schedule ends with prefilled block, breaking")
@@ -954,13 +955,12 @@ class SequentialScheduler(Scheduler):
                                 newb.constraints_value = block_constraint_results[bestblock_idx]
                                 self.schedule.insert_slot(newb.start_time, newb)
                             else:
-                                print("Breaking here12")
                                 break
 
 
 
 
-        else:
+        else: #Noverojumu planosana ar kalibresanu ieslegtu
             timeStart = self.schedule.start_time
             pre_filled = np.array([[block.start_time, block.end_time] for
                                    block in self.schedule.scheduled_blocks])
@@ -995,7 +995,7 @@ class SequentialScheduler(Scheduler):
             current_time = self.schedule.start_time
 
             preFilled = []
-            if self.timeDict is not None:
+            if self.timeDict is not None: #Vispirms ieplano specifiskos laikus
                 print(self.timeDict)
                 for key, value in self.timeDict.items():
                     print(key, value)
@@ -1011,6 +1011,16 @@ class SequentialScheduler(Scheduler):
                             break
                     if newb:
                         newb.start_time = obsTime
+
+
+
+
+
+                        #TODO Ievietot parbaudes vai nepieciesams splitot
+
+
+
+
 
                         newb.end_time = obsTime + newb.duration
                         if self.fits_constraints(newb, newb.start_time):
@@ -1073,6 +1083,7 @@ class SequentialScheduler(Scheduler):
                 else:
                     if(self.firstSchedule):
                         print("First schedule")
+                        #Noverojuma sakuma ieplano tuvako kalibratoru noverojumam ar vislielako prioritati
                         calibrator = self.get_closest_calibrator(blocks[bestblock_idx], current_time)
                         calibratorBlock = ObservingBlock(calibrator, self.calibLen * u.min, 1, calibration=True)
 
@@ -1112,8 +1123,8 @@ class SequentialScheduler(Scheduler):
                     bestblock_indexes = block_constraint_results.copy()
 
                     while(True):
-                        if ((current_time - timeStart).to_datetime().seconds / 60 > self.calibGap):  # if hour passed without calibration
-                            calibrator = self.get_closest_calibrator(newb, current_time, last_block=lastBlock)  # add calibration to schedule
+                        if ((current_time - timeStart).to_datetime().seconds / 60 > self.calibGap):  # Ja laiks parsniedz settingos noradito laiku
+                            calibrator = self.get_closest_calibrator(newb, current_time, last_block=lastBlock)  # tad ievieto calibrator
                             calibratorBlock = ObservingBlock(calibrator, self.calibLen * u.min, 1, constraints=self.constraints, calibration=True)
                             trans = self.transitioner(calibratorBlock, b, current_time, self.observer)
                             transition_time = 0 * u.second if trans is None else trans.duration
@@ -1151,7 +1162,7 @@ class SequentialScheduler(Scheduler):
                         if (totalTime < self.schedule.end_time):
 
                             splits = []
-                            if (newb.duration > self.calibGap * u.min):
+                            if (newb.duration > self.calibGap * u.min): #Ja noverojums garaks par settings noradito laiku, to sagriez lai ievietotu cailbrator
                                 print(newb.target.name," too long, will be split")
 
                                 splitLeft = newb.duration
@@ -1311,7 +1322,7 @@ class SequentialScheduler(Scheduler):
                                         current_time += self.gap_time
                                         break
 
-                            else:
+                            else: #Ja nav jaievieto calibrator ievieto noverojumu
                                     preFilledOK = True
                                     print(preFilled)
                                     for preFilledStart, preFilledEnd in preFilled:
@@ -1361,7 +1372,7 @@ class SequentialScheduler(Scheduler):
                                         else:
                                             current_time += self.gap_time
                                             break
-                        else:
+                        else: #Ja nevar ievietot doto noverojumu, ievieto isakus
                             index, shortest_time = self.get_shortest_observation(current_time, blocks)
                             if index is not None and shortest_time is not None:
                                 if len(self.schedule.observing_blocks) > 0:

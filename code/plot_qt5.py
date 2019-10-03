@@ -1,3 +1,8 @@
+"""
+
+Plot klase, kas veido grafikus
+
+"""
 from PyQt5.QtWidgets import QSizePolicy, QVBoxLayout
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure

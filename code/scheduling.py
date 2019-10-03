@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+"""
+Galvenais fails, kurš sastāv no grafiskajiem elementiem, failu nolasīšanas un veidošanas
+un plānotāja palaišanas.
+"""
 import matplotlib.pyplot as plt
 from astropy.visualization import astropy_mpl_style
 import astropy.units as u
@@ -83,7 +87,7 @@ class GUI(QWidget):
                 sourceName = row[0]
 
                 raText = row[1]
-                raText = insert(raText, 'h', 2)
+                raText = insert(raText, 'h', 2)     #Nolasa targets no faila un ievieto targetsDict un targets
                 raText = insert(raText, 'm', 5)
                 raText = insert(raText, 's', len(raText))
 
@@ -129,7 +133,7 @@ class GUI(QWidget):
                 else:
                     decText = insert(decText, 'd', 3)
                     decText = insert(decText, 'm', 6)
-                    decText = insert(decText, 's', len(decText))
+                    decText = insert(decText, 's', len(decText))            #Nolasa no faila calibratorus un ievieto calibratorsDict un calibrators
 
                 ra = Angle(raText)
                 dec = Angle(decText)
@@ -140,7 +144,7 @@ class GUI(QWidget):
                 calibrator = FixedTarget(coord=calibratorCoord, name=sourceName)
                 self.calibrators.append(calibrator)
 
-        startArray, endArray, summaryArray = get_all_events()
+        startArray, endArray, summaryArray = get_all_events()       #No google calendar sanem noverosanas datumus un laikus
         self.dateList = QListWidget()
 
         tempCheck = True
@@ -149,14 +153,8 @@ class GUI(QWidget):
             dayEnd = parse(endArray[i])
             daySummary = summaryArray[i]
             daySummary = daySummary + " " + str(dayStart.date()) + " " + str(dayStart.time()) + "-" + str(dayEnd.time())
-            #print(dayStart)
-            #print(type(dayStart))
-            #dayStart = dayStart.isoformat()
-            #print(dayStart)
-            #print(type(dayStart))
-            #dayEnd = dayEnd.isoformat()
             item = QListWidgetItem(daySummary, self.dateList)
-            item.setData(Qt.UserRole, [dayStart, dayEnd])
+            item.setData(Qt.UserRole, [dayStart, dayEnd])               #Izveido listwidget item no datuma un laika un to ievieto listwidget
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             item.setCheckState(Qt.Unchecked)
             if tempCheck and "maser" in daySummary:
@@ -167,8 +165,8 @@ class GUI(QWidget):
         config = configparser.ConfigParser()
         config.read('config/config.ini')
         self.config = config._sections['Default']
-        self.config['calibration'] = config['Default'].getboolean('calibration')
-        #print(config['Default']['obsSplitLength'])
+        self.config['calibration'] = config['Default'].getboolean('calibration')  #Nolasa config failu
+
 
         self.layout = QGridLayout()
         self.layout.setSpacing(0)
@@ -182,21 +180,19 @@ class GUI(QWidget):
         self.targetTimesCount = 0
         self.load_ui()
 
-    def load_ui(self):
-        print(self.targets)
-        print(self.targetsDict)
+    def load_ui(self):   #Funkcija kas ielade galveno skatu
         self.observationList = QListWidget()
         self.plannedTargets = []
         for target in self.targets[:10]:
-            item = QListWidgetItem(str(target), self.observationList)
+            item = QListWidgetItem(str(target), self.observationList)    #Aizpilda planotaju ar 10 targets kurus ieprieks nolasija no faila
             item.setData(Qt.UserRole, target)
             self.observationList.addItem(item)
             self.plannedTargets.append(target.name)
 
         self.layout.addWidget(self.observationList, 0, 0, 10, 2)
 
-        self.observationList.itemSelectionChanged.connect(self.obsChanged)
-
+        self.observationList.itemSelectionChanged.connect(self.obsChanged) #Connect savieno kada UI elementa action (piemeram click) ar funkciju koda
+                                                                           #Seit mainot izveleto elemntu listwidget izsauksies funkcija obsChanged
         for index in range(self.observationList.count()):
             item = self.observationList.item(index)
 
@@ -296,10 +292,10 @@ class GUI(QWidget):
         saveObsButton.clicked.connect(self.save_obs)
         self.layout.addWidget(saveObsButton, 5, 3)
         loadObsButton = QPushButton("Load observation")
-        loadObsButton.clicked.connect(self.load_obs)
+        loadObsButton.clicked.connect(self.load_obs_new)
         self.layout.addWidget(loadObsButton, 6, 3)
 
-    def add_time(self):
+    def add_time(self):    #Pievieno combobox ar izveletajiem datumiem
         datesChecked = 0
         for index in range(self.dateList.count()):
             if self.dateList.item(index).checkState() == Qt.Checked:
@@ -323,7 +319,7 @@ class GUI(QWidget):
         else:
             self.show_error("Date error", "Can't select more times than selected dates")
 
-    def timeChanged(self, item):
+    def timeChanged(self, item): #Ja pie specifiskajiem laikiem izvelas remove tad iznem to
         if item == "Remove":
             for line in self.dateBoxList:
                 if line is not None:
@@ -339,12 +335,10 @@ class GUI(QWidget):
             self.dateBoxList.remove(line)
 
 
-    def obsChanged(self):
+    def obsChanged(self):  #Nomainot observation nomaina visus texta laukus
         if len(self.observationList.selectedItems()) > 0:
             item = self.observationList.currentItem()
             plannedObs = item.data(Qt.UserRole)
-            print(plannedObs.times)
-            print(plannedObs.get_times())
             self.nameBox.setText(plannedObs.name)
             self.priorityBox.setText(str(plannedObs.priority))
             self.obsBox.setText(str(plannedObs.obs_per_week))
@@ -370,14 +364,14 @@ class GUI(QWidget):
                 print(checkedDates)
                 for time in list(plannedObs.times):
                     print(time)
-                    if time not in checkedDates:
+                    if time not in checkedDates:    #Ja observation pievienots specifisks laiks datumam kurs vairs netiks izmantots to pazino lietotajam
                         self.show_error("Date mismatch", "Date "+time+" is not checked, removing it")
-                        #plannedObs.times.remove(time)
+                        plannedObs.times.remove(time)
                 for time in list(plannedObs.times):
                     line = QHBoxLayout()
                     dateBox = QComboBox()
                     for index in range(self.dateList.count()):
-                        if self.dateList.item(index).checkState() == Qt.Checked:
+                        if self.dateList.item(index).checkState() == Qt.Checked: #Specific laikiem pievieno tikai datumus kas izveleti pie dates
                             dateBox.addItem(self.dateList.item(index).text(), self.dateList.item(index).data(Qt.UserRole))
                     dateBox.addItem("Remove")
                     dateBox.currentTextChanged.connect(self.timeChanged)
@@ -407,7 +401,7 @@ class GUI(QWidget):
             self.show_error("Observation error","Select an observation to remove it")
 
 
-    def save_obs_changes(self):
+    def save_obs_changes(self): #Ja visi teksta lauki atbilst parbaudem tad saglaba datus, ja ne tad pazino lietotajam
         if not self.priorityBox.text().isdigit():
             self.show_error("Priority error", "Priority must be from 1 to 4")
         elif int(self.priorityBox.text()) > 4 or int(self.priorityBox.text()) < 0:
@@ -423,23 +417,38 @@ class GUI(QWidget):
         elif len(self.dateBoxList) != len(set(self.dateBoxList)):
             self.show_error("Date error", "Make sure specified times don't use same dates")
         else:
-            self.observationList.currentItem().data(Qt.UserRole).priority = int(self.priorityBox.text())
-            self.observationList.currentItem().data(Qt.UserRole).obs_per_week = int(self.obsBox.text())
-            self.observationList.currentItem().data(Qt.UserRole).scans_per_obs = int(self.scanBox.text())
-            self.observationList.currentItem().data(Qt.UserRole).global_time = self.globalTimeBox.text()
-            self.observationList.currentItem().setText(str(self.observationList.currentItem().data(Qt.UserRole)))
             times = {}
+            timeCheck = True
             for line in self.dateBoxList:
                 if line.count() > 0:
                     item = line.itemAt(0)
                     widget = item.widget()
                     date = widget.currentText()
+                    time = date[-17:]
+                    time = time.split('-')
+                    timeStart = time[0]
+                    timeStart = timeStart[:-3]
+                    timeEnd = time[1]
+                    timeEnd = timeEnd[:-3]
+                    time = line.itemAt(1).widget().text()
+                    timeCheck = self.time_check(time, timeStart, timeEnd)
 
-                    times[date] = line.itemAt(1).widget().text()
+                    if timeCheck == False:
+                        break
+                    else:
+                        times[date] = line.itemAt(1).widget().text()
 
-            self.observationList.currentItem().data(Qt.UserRole).times = times
+            if timeCheck: #Ja visas parbaudes izietas tad saglaba datus
+                self.observationList.currentItem().data(Qt.UserRole).times = times
+                self.observationList.currentItem().data(Qt.UserRole).priority = int(self.priorityBox.text())
+                self.observationList.currentItem().data(Qt.UserRole).obs_per_week = int(self.obsBox.text())
+                self.observationList.currentItem().data(Qt.UserRole).scans_per_obs = int(self.scanBox.text())
+                self.observationList.currentItem().data(Qt.UserRole).global_time = self.globalTimeBox.text()
+                self.observationList.currentItem().setText(str(self.observationList.currentItem().data(Qt.UserRole)))
+            else:
+                self.show_error("Specific time error", "Make sure the specific times fit the dates selected")
 
-    def add_obs(self):
+    def add_obs(self): #Izveido jaunu observation
         if self.targetComboBox.count() > 0:
             targetName = self.targetComboBox.currentText()
             ra = self.targetsDict[targetName]["ra"]
@@ -453,14 +462,14 @@ class GUI(QWidget):
             self.plannedTargets.append(data.name)
             self.targetComboBox.removeItem(self.targetComboBox.currentIndex())
 
-    def edit_dates(self):
+    def edit_dates(self): #Atver dates skatu
         self.clear_window()
         self.layout.addWidget(self.dateList, 0, 0, 5, 2)
         backButton = QPushButton("Back to planner")
         self.layout.addWidget(backButton, 1, 2)
         backButton.clicked.connect(self.to_start)
 
-    def edit_targets(self):
+    def edit_targets(self): #Atver targets skatu
         self.clear_window()
 
         self.targetList = QListWidget()
@@ -534,7 +543,7 @@ class GUI(QWidget):
                 self.targetsDict[targetName]["ra"] = Angle(ra)
                 self.targetsDict[targetName]["dec"] = Angle(dec)
 
-    def add_target(self):
+    def add_target(self): #Pievieno jaunu target
         raPattern = re.compile("[0-9]{1,2}h[0-9]{1,2}m[0-9]{1,2}(\.[0-9]{1,3})?s")
         decPattern = re.compile("-?[0-9]{1,2}d[0-9]{1,2}m[0-9]{1,2}(\.[0-9]{1,3})?s")
         ra = self.addRaBox.text()
@@ -555,7 +564,7 @@ class GUI(QWidget):
             self.targetsDict[name]["dec"] = Angle(dec)
             self.edit_targets()
 
-    def edit_calibrators(self):
+    def edit_calibrators(self): #Atver calibrators skatu
         self.clear_window()
 
         self.calibratorList = QListWidget()
@@ -651,7 +660,7 @@ class GUI(QWidget):
             self.edit_calibrators()
 
 
-    def load_settings(self):
+    def load_settings(self): #Atver settings skatu
         self.clear_window()
         targetLayout = QFormLayout()
         targetBox = QGroupBox()
@@ -719,7 +728,7 @@ class GUI(QWidget):
             self.config['calibration'] = self.calibCheckBox.isChecked()
             self.to_start()
 
-    def prepare_schedule(self):
+    def prepare_schedule(self): #Pirms uzsak planosanu, parbauda vai ir izvelets kads datums
         hasDate = False
         for index in range(self.dateList.count()):
             if self.dateList.item(index).checkState() == Qt.Checked:
@@ -730,26 +739,26 @@ class GUI(QWidget):
         else:
             self.start_schedule()
 
-    def start_schedule(self):
+    def start_schedule(self): #Sak planosanu
         items = (self.layout.itemAt(i).widget() for i in range(self.layout.count()))
         self.targets = []
 
         for index in range(self.observationList.count()):
             item = self.observationList.item(index)
             target = item.data(Qt.UserRole)
-            self.targets.append(target)
+            self.targets.append(target)  #Visus obs ievieto masiva targets
 
         targ_to_color = {}
         color_idx = np.linspace(0, 1, len(self.targets))
-        # lighter, bluer colors indicate higher
-        for target, ci in zip(set(self.targets), color_idx):
+
+        for target, ci in zip(set(self.targets), color_idx): #Katram target un calibrator pieskir savu krasu
             if "split" not in target.name:
                 if target.name not in targ_to_color:
                     targ_to_color[target.name] = plt.cm.jet(ci)
 
         calib_to_color = {}
         color_idx = np.linspace(0, 1, len(self.calibrators))
-        # lighter, bluer colors indicate higher
+
         for calibrator, ci in zip(set(self.calibrators), color_idx):
             if "split" not in calibrator.name:
                 if calibrator.name not in calib_to_color:
@@ -761,7 +770,7 @@ class GUI(QWidget):
         week = {}
 
         for index in range(self.dateList.count()):
-            if self.dateList.item(index).checkState() == Qt.Checked:
+            if self.dateList.item(index).checkState() == Qt.Checked: #Dates ievieto dict week
                 week[self.dateList.item(index).text()]=[self.dateList.item(index).data(Qt.UserRole)[0], self.dateList.item(index).data(Qt.UserRole)[1]]
 
 
@@ -774,7 +783,7 @@ class GUI(QWidget):
 
             for target in self.targets:
                 if daySummary in target.times:
-                    timeDict[target.name] = target.times[daySummary]
+                    timeDict[target.name] = target.times[daySummary] #Pievieno specifiskos laikus dict timeDict
                 elif target.global_time != "":
                     timeDict[target.name] = target.global_time
 
@@ -790,7 +799,7 @@ class GUI(QWidget):
             for target in self.targets:
                 n = target.scans_per_obs
                 priority = target.priority
-                if (target.obs_per_week != 0):
+                if (target.obs_per_week != 0): #Ja observation vel ir janovero tad izveido ObservingBlock
                     b = ObservingBlock.from_exposures(target.target, priority, target_exp, n, read_out)
                     blocks.append(b)
 
@@ -798,7 +807,7 @@ class GUI(QWidget):
             slew_rate = 2 * u.deg / u.second
             transitioner = Transitioner(slew_rate, {'filter': {'default': 5 * u.second}})
 
-            if (self.config['calibration']):
+            if (self.config['calibration']): #Padod mainigos planotajam
                 prior_scheduler = SequentialScheduler(constraints=constraints, observer=self.irbene, transitioner=transitioner,
                                                       calibrators=self.calibrators, config=self.config, timeDict=timeDict)
 
@@ -820,7 +829,7 @@ class GUI(QWidget):
                     observations.append(observation)
 
             dict_array = []
-            for observation in observations:
+            for observation in observations: #Saplanotos block nolasa un ieraksta faila
                 for target in self.targets:
                     if target.name == observation.name:
                         print(target.name, " has been observed once")
@@ -841,7 +850,7 @@ class GUI(QWidget):
                 json.dump(json_dict, outfile, indent=4)
 
 
-            sky = Plot()
+            sky = Plot() #Izveido grafikus
             skyCheck = sky.plot_sky_schedule(priority_schedule)
             alt = Plot(width=6)
             alt.plot_altitude_schedule(priority_schedule)
@@ -863,7 +872,7 @@ class GUI(QWidget):
 
         self.show_schedule()
 
-    def show_schedule(self):
+    def show_schedule(self): #Atver grafiku skatu
         self.clear_window()
 
         sky, alt = self.plots[self.plots_idx]
@@ -944,17 +953,14 @@ class GUI(QWidget):
         if filename != "Fail":
             obsList = [self.observationList.item(i).data(Qt.UserRole) for i in range(self.observationList.count())]
             json_dict = dict()
-            dict_array = []
             for obs in obsList:
                 json_dict[obs.target.name]={
-                    #"target": obs.target.name,
                     "priority": obs.priority,
                     "obs_per_week": obs.obs_per_week,
                     "scans_per_obs": obs.scans_per_obs,
                     "global_time": obs.global_time,
                     "times": obs.times,
                 }
-            #json_dict = dict_array
             print(json_dict)
             with open(filename, 'w') as outfile:
                 json.dump(json_dict, outfile, indent=4)
@@ -992,29 +998,64 @@ class GUI(QWidget):
                         for date in obs_dict[key]['times']:
                             print(date)
 
+                            # TODO Te pielikt date parbaudes, vai atkekset ja ir vai iznemt ja nav
 
-
-                            #TODO Te pielikt date parbaudes, vai atkekset ja ir vai iznemt ja nav
-
-
-
-
-
-
-
-
-
-
-
-                        data = PlannedObs(target, int(obs_dict[key]['priority']), int(obs_dict[key]['obs_per_week']), int(obs_dict[key]['scans_per_obs']), obs_dict[key]['times'], obs_dict[key]['global_time'])
+                        data = PlannedObs(target, int(obs_dict[key]['priority']), int(obs_dict[key]['obs_per_week']),
+                                          int(obs_dict[key]['scans_per_obs']), obs_dict[key]['times'],
+                                          obs_dict[key]['global_time'])
                         item = QListWidgetItem(str(data), self.observationList)
                         item.setData(Qt.UserRole, data)
                         self.observationList.addItem(item)
                         self.plannedTargets.append(target.name)
                     else:
-                        self.show_error("Targett error", key+" not in targets, skipping it")
+                        self.show_error("Target error", key + " not in targets, skipping it")
         else:
             print("Something went wrong")
+
+    def load_obs_new(self):
+        load = QFileDialog()
+        load.setDefaultSuffix(".conf")
+        load.setNameFilter("CONF files (*.conf)")
+        load.setAcceptMode(QFileDialog.AcceptOpen)
+        load.setOption(QFileDialog.DontUseNativeDialog)
+        if load.exec_() == QFileDialog.Accepted:
+            self.observationList.clear()
+            filename = load.selectedFiles()[0]
+            configObs = configparser.ConfigParser()
+            configObs.read(filename)
+            sections = configObs.sections()
+            for section in sections:
+                target = section.split('_')[0]
+                ra = configObs[section]["RA"]
+                dec = configObs[section]["DEC"]
+
+                if target not in self.targetsDict.keys():
+                    coords = {"ra": Angle(ra), "dec": Angle(dec)}
+                    self.targetsDict[target] = coords
+                else:
+                    if Angle(ra) != Angle(self.targetsDict[target]["ra"]) or Angle(dec) != Angle(self.targetsDict[target]["dec"]):
+                        qm = QMessageBox
+                        ret = qm.question(self,'', target+" has different coords in the load file, would you like to overwrite the current ones?\n"+
+                                                            "new coords:"+str(ra)+";   "+str(dec)+"\ncurrent coords:"+str(self.targetsDict[target]["ra"])+";   "+str(self.targetsDict[target]["dec"]), qm.Yes | qm.No)
+                        if ret == qm.Yes:
+                            self.targetsDict[target]["ra"] = Angle(ra)
+                            self.targetsDict[target]["dec"] = Angle(dec)
+
+                targetName = target
+                ra = self.targetsDict[targetName]["ra"]
+                dec = self.targetsDict[targetName]["dec"]
+                coord = SkyCoord(frame='icrs', ra=ra, dec=dec, obstime="J2000")
+                target = FixedTarget(coord=coord, name=targetName)
+
+                data = PlannedObs(target, 1, 1, int(configObs[section]["n_scans"]), None, None)
+                item = QListWidgetItem(str(data), self.observationList)
+                item.setData(Qt.UserRole, data)
+                self.observationList.addItem(item)
+                self.plannedTargets.append(target.name)
+
+        else:
+            print("Something went wrong")
+
 
     def show_error(self, title, error_message):
         error_dialog = QMessageBox.critical(self, title, error_message)
@@ -1029,9 +1070,25 @@ class GUI(QWidget):
 
     def is_time_format(self, string):
         p = re.compile('^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$')
-        res = p.match(string)
-        print(res)
+        print(string)
+        res = bool(p.match(string))
         return res
+
+    def time_check(self, time, timeStart, timeEnd):
+        if not self.is_time_format(time):
+            return False
+        else:
+            time = time.split(':')
+            timeStart = timeStart.split(':')
+            timeEnd = timeEnd.split(':')
+            if int(time[0]) < int(timeStart[0]) or int(time[0]) > int(timeEnd[0]):
+                return False
+            elif int(time[0]) > int(timeStart[0]) and int(time[0]) < int(timeEnd[0]):
+                return True
+            elif (int(time[0]) == int(timeStart[0]) and int(time[1]) < int(timeStart[1])) or (int(time[0]) == int(timeEnd[0]) and int(time[1]) > int(timeEnd[1])):
+                return False
+            elif (int(time[0]) == int(timeStart[0]) and int(time[1]) >= int(timeStart[1])) or (int(time[0]) == int(timeEnd[0]) and int(time[1]) < int(timeEnd[1])):
+                return True
 
     def deleteItemsOfLayout(self, layout):
         if layout is not None:

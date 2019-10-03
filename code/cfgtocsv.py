@@ -1,3 +1,8 @@
+"""
+
+cfgtocsv.py nolasa targets no cfg faila un ievieto tos csv faila ar random izveidotiem datiem par noverojumu
+
+"""
 import numpy as np
 import csv
 import configparser

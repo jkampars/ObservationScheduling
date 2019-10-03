@@ -1,3 +1,8 @@
+"""
+
+PlannedObs klase, kas satur informaciju par target un noverojuma informaciju
+
+"""
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from astroplanventa import FixedTarget

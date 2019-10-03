@@ -1,0 +1,75 @@
+{
+    "g60p57": {
+        "priority": 1,
+        "obs_per_week": 0,
+        "scans_per_obs": 5,
+        "global_time": "",
+        "times": ""
+    },
+    "g73p06": {
+        "priority": 1,
+        "obs_per_week": 0,
+        "scans_per_obs": 5,
+        "global_time": "18:30",
+        "times": {}
+    },
+    "g75p78": {
+        "priority": 1,
+        "obs_per_week": 0,
+        "scans_per_obs": 5,
+        "global_time": "",
+        "times": ""
+    },
+    "g111p26": {
+        "priority": 1,
+        "obs_per_week": 0,
+        "scans_per_obs": 5,
+        "global_time": "",
+        "times": ""
+    },
+    "w75s": {
+        "priority": 1,
+        "obs_per_week": 0,
+        "scans_per_obs": 5,
+        "global_time": "",
+        "times": ""
+    },
+    "ngc7538": {
+        "priority": 1,
+        "obs_per_week": 0,
+        "scans_per_obs": 5,
+        "global_time": "",
+        "times": ""
+    },
+    "g136p84": {
+        "priority": 1,
+        "obs_per_week": 0,
+        "scans_per_obs": 5,
+        "global_time": "",
+        "times": {
+            "RT-16 maser 2019-09-15 18:00:00-20:00:00": "10:00",
+            "RT-16 maser 2019-09-10 18:00:00-19:00:00": "11:00"
+        }
+    },
+    "s252a": {
+        "priority": 1,
+        "obs_per_week": 3,
+        "scans_per_obs": 5,
+        "global_time": "",
+        "times": ""
+    },
+    "s255": {
+        "priority": 1,
+        "obs_per_week": 1,
+        "scans_per_obs": 5,
+        "global_time": "",
+        "times": ""
+    },
+    "s269": {
+        "priority": 1,
+        "obs_per_week": 3,
+        "scans_per_obs": 5,
+        "global_time": "",
+        "times": ""
+    }
+}

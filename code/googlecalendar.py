@@ -1,3 +1,11 @@
+"""
+
+Googlecalendar.py iegust dates no google calendar
+
+"""
+
+
+
 ### this file is quickstart.py from google's examples modified by Ali Nuri SEKER
 ### the original could be found at https://developers.google.com/calendar/quickstart/python
 ### comments made by me will be marked with triple hash(#)
